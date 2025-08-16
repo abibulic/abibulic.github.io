@@ -253,7 +253,7 @@ $$</p>
 $$</p>
 <!-- w24 -->
 <p>$$
-\frac{\partial error}{\partial w_{32}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{22}(s)
+\frac{\partial error}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{2}(s)
 $$</p>
 <!-- w14 -->
 <p>$$
@@ -410,7 +410,7 @@ $$</p>
 <p>This might look a bit intimidating at first glance, but it’s not as bad as it seems. A lot of structure hides in these equations. There are patterns, and once you spot them, the whole thing starts to simplify.
 That said, a careful reader might notice that we’re not quite done yet.
 To properly update our parameters, we still need to say what \(\frac{\partial N}{\partial \tau}\) and \(\frac{\partial N}{\partial \theta}\) actually mean. So let’s do that.</p>
-<p>Remember, \(N\) is just an abstraction. It represents the behavior of a Laplace neuron receiving weighted inputs and firing after threshold is reach.</p>
+<p>Remember, \(N\) is just an abstraction. It represents the behavior of a Laplace neuron receiving weighted inputs and firing after threshold is reached.</p>
 <p>Now, to adjust the internal parameters \(\tau\) and \(\theta\), we need to partially differentiate this abstraction. In other words, we have to unpack what \(N\) is doing with respect to each of these values, so we can know exactly how a change in one affects the overall output.</p>
 <p>Let’s write it out:</p>
 <div class="katex-wrapper">
@@ -444,7 +444,7 @@ $$</p>
 <p>$$
 H(s) = \frac{num(s)}{den(s)}
 $$</p>
-<p>Polese are defined as the roots of the denominator polynomial of the transfer function, where \(den(s) = 0\).
+<p>Poles are defined as the roots of the denominator polynomial of the transfer function, where \(den(s) = 0\).
 In our example the transfer function has:</p>
 <p>$$
 den(s) = \tau s + 1
@@ -472,7 +472,7 @@ $$</p>
     </div>
 </p>
 <p>So what does this mean for our training process?
-Well, to keep its dynamics stable, we need to make sure that the pole stays on the left side. In our case, that simply means keeping \(\tau &gt; 0\) If \(\tau\) becomes zero or negative during training, the pole jumps into the unstable zone, and thins start exploding numerically.</p>
+Well, to keep its dynamics stable, we need to make sure that the pole stays on the left side. In our case, that simply means keeping \(\tau &gt; 0\) If \(\tau\) becomes zero or negative during training, the pole jumps into the unstable zone, and things start exploding numerically.</p>
 <p>To prevent that, we can apply a simple constraint during training: clip the gradient so that \(\tau\) never drops below a small positive value. Something like \(\tau > \epsilon\), where \(\epsilon\) is an infinitesimally small number, just enough to keep things on the safe side of the plane.</p>
 <p>If every neuron in the network maintains this constraint, if every little system stays stable, the whole network remains stable too.</p>
 <hr />
