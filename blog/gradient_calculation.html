@@ -150,7 +150,7 @@ updateThemeIcon(isDark);
 <p>Let’s revisit the equation of the Laplace Neuron:</p>
 <div class="katex-wrapper">
 <p>$$
- Y(s) = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{K}{\tau s+1}}
+  Y(s) = \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1}
 $$
 </p>
 </div>
@@ -415,16 +415,18 @@ To properly update our parameters, we still need to say what \(\frac{\partial N}
 <p>Let’s write it out:</p>
 <div class="katex-wrapper">
 <p>$$
-\frac{\partial N}{\partial \tau} = \frac{\partial (\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}})}{\partial \tau} = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{-s}{(\tau s+1)^2}}
+\frac{\partial N}{\partial \tau} = \frac{\partial \left( \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{1}{\tau s + 1}\right)}{\partial \tau} = \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{-s}{(\tau s + 1)^2}
 $$</p>
 <p>$$
-\frac{\partial N}{\partial \theta} = \frac{\partial (\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}})}{\partial \theta} = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{-s}{\tau s+1}}
+\frac{\partial N}{\partial \theta} 
+= \frac{\partial \left( \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{1}{\tau s + 1} \right)}{\partial \theta} 
+= \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{-s}{\tau s + 1}
 $$</p>
 </div>
 <p>We can also write out the partial derivative of the \(\delta\)ReLU, just to get some intuition about what happens to the derivative when the threshold is reached:</p>
 <div class="katex-wrapper">
 <p>$$
-\frac{\partial N}{\partial \delta ReLU} = \frac{\partial (\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}})}{\partial \delta ReLU} = \begin{cases}
+\frac{\partial N}{\partial \delta \mathrm{ReLU}} = \frac{\partial \left( \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{1}{\tau s + 1}\right)}{\partial \delta \mathrm{ReLU}} = \begin{cases}
         (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}}) &amp; \text{if } x&gt;\delta \\ 
         0 &amp; \text{otherwise}
     \end{cases}

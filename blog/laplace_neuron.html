@@ -170,7 +170,7 @@ That may sound paradoxical, or even absurd because a model that fully replicates
 <p>To keep it simple, I’ll use a well-known transfer function called <strong>First Order Plus Dead Time</strong> (FOPDT). It looks like this:</p>
 <div class="katex-wrapper">
 <p>$$
-H(s) = \frac{Y(s)}{U(s)} = e^{-\theta s}\frac{K}{\tau s + 1}
+H(s) = \frac{Y(s)}{U(s)} = e^{-\theta s} \cdot \frac{K}{\tau s + 1}
 $$
 </div>
 </p>
@@ -215,7 +215,7 @@ $$
 <p>Let’s introduce what I call the \(\delta\)ReLU, defined by the following equation:
 <div class="katex-wrapper">
 $$
-\delta ReLU(x) = \begin{cases}
+\delta \mathrm{ReLU}(x) = \begin{cases}
         x &amp; \text{if } x&gt;\delta \\ 
         0 &amp; \text{otherwise}
     \end{cases}
@@ -249,7 +249,7 @@ The same logic applies to biased systems, like biological neurons that fire at a
 </p>
 <div class="katex-wrapper">
 <p>$$
- Y(s) = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{K}{\tau s+1}}
+ Y(s) = \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1}
 $$</p>
 </div>
 <ul>
@@ -257,29 +257,27 @@ $$</p>
 <p>\(Y(s)\) is the output in the Laplace domain</p>
 </li>
 <li>
-<p>\(\delta ReLU\) is activation function</p>
+<p>\(\delta\mathrm{ReLU}\) is activation function</p>
 </li>
 <li>
 <p>\(\sum_{j=1}^{n} {w_j}{U_j(s)}\) is weighted sum of inputs</p>
 </li>
 <li>
-<p>\(e^{-\theta s}\frac{K}{\tau s+1}\) is first order plus dead time transfer function.</p>
+<p>\(e^{-\theta s}\frac{K}{\tau s+1}\) is first order plus dead time transfer function</p>
 </li>
+<li><p>\(\mathcal{L} \left[ {f}(s) \right] = \int_{0}^{\infty} f(t)e^{-st} \, dt \) is the Laplace transform</p></li>
+<li><p>\(\mathcal{L}^{-1}\) is the inverse of the Laplace transform</p></li>
 </ul>
 <p>or more intuitive form in time domain:</p>
 <div class="katex-wrapper">
 <p>$$
- y(t) = \mathcal{L}^{-1}{\ \mathcal{L}{\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ u_j(t))  }\cdot e^{-\theta s}\frac{K}{\tau s+1}}}
+ y(t) = \mathcal{L}^{-1} \left[ \mathcal{L} \left( \delta \mathrm{ReLU} \left( \sum_{j=1}^{n} w_j \, u_j(t) \right) \right) \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1} \right]
 $$
 </div>
-where:</p>
-<ul>
-<li><p>\(\mathcal{L}{f}(s) = \int_{0}^{\infty} f(t)e^{-st} \, dt \) is the Laplace transform</p></li>
-</ul>
 <p>We can also rewrite the transfer function in the time domain and represent it as a <a href="https://en.wikipedia.org/wiki/State-space_representation">state-space</a> model as follows:
 <div class="katex-wrapper">
 $$
-\dot{x}(t) = \delta ReLU[A\cdot x(t) + B\cdot u(t - \theta)]
+\dot{x}(t) = \delta\mathrm{ReLU}[A\cdot x(t) + B\cdot u(t - \theta)]
 $$
 </div>
 <div class="katex-wrapper">
