@@ -1,0 +1,45 @@
+.delta-class {
+  content: url("../../assets/img/delta.png");
+}
+
+body[data-bs-theme=dark] .delta-class {
+  content: url("../../assets/img/delta-dark.png");
+}
+
+.step-class {
+  content: url("../../assets/img/step.png");
+}
+
+body[data-bs-theme=dark] .step-class {
+  content: url("../../assets/img/step-dark.png");
+}
+
+.neuron_scheme-class {
+  content: url("../../assets/img/neuron_scheme.png");
+}
+
+body[data-bs-theme=dark] .neuron_scheme-class {
+  content: url("../../assets/img/neuron_scheme-dark.png");
+}
+
+.network-class {
+  content: url("../../assets/img/network2.png");
+}
+
+body[data-bs-theme=dark] .network-class {
+  content: url("../../assets/img/network2-dark.png");
+}
+
+.poles-class {
+  content: url("../../assets/img/poles.png");
+}
+
+body[data-bs-theme=dark] .poles-class {
+  content: url("../../assets/img/poles-dark.png");
+}
+
+.responsive {
+  max-width: 100%;
+  height: auto;
+}
+

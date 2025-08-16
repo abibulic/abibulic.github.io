@@ -1,0 +1,12 @@
+.katex-wrapper {
+  font-size: clamp(15px, 2.5vw, 18px);
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.katex-wrapper .katex {
+  font-size: inherit !important;
+  line-height: 1.4;
+}
+

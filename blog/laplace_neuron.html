@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body);"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>How to model the world? Introduction to Laplace Neuron</title>
+    <meta name="description" content="What does it really mean to “model a world”? In artificial intelligence, this question goes beyond data and algorithms, it touches on how machines can represent, reason, and adapt to dynamic environments. This post explores fresh perspectives on world modeling, offering insights into why it matters for the future of intelligent systems and where current approaches fall short.">
+    <meta property="og:image" content="https://abibulic.github.io/assets/img/neuron.jpg">
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Share+Tech+Mono&amp;display=swap">
+    <link rel="stylesheet" href="../assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="../assets/css/equations.css">
+    <link rel="stylesheet" href="../assets/css/scrolltop.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/theme_switch.css">
+</head>
+
+<body style="font-family: 'Share Tech Mono', monospace;">
+    <div class="limited-width">
+        <div class="notebook-grid">
+            <div id="navbar-div" class="fancy-border">
+                <nav class="navbar navbar-expand-md text-uppercase text-end">
+                    <div class="container-fluid"><a class="navbar-brand" href="#"></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1" style="border-color: var(--bs-success);"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                        <div class="collapse navbar-collapse" id="navcol-1">
+                            <ul class="navbar-nav mx-auto underline-links">
+                                <li class="nav-item"><a class="nav-link" href="../index.html">About</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../blog.html">Blog</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../cv.html">CV</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../contact.html">Contact</a></li>
+                            </ul><div class="theme-switcher">
+  <label class="switch">
+    <input type="checkbox" id="themeToggle">
+    <span class="slider">
+      <span class="icon" id="themeIcon"></span>
+    </span>
+  </label>
+</div>
+
+<style>
+.theme-switcher {
+  display: inline-block;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #f1efee;
+  transition: background-color 0.3s;
+  border-radius: 34px;
+  border: 1px solid var(--bs-success); /* or any color you like */
+}
+
+.icon {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease-in-out;
+  color: #fff;
+}
+    
+@media (min-width: 768px) {
+  .icon {
+    top: 0px;       /* move icon down */
+  }
+}
+
+.switch input:checked + .slider {
+  background-color: #102131;
+}
+
+.switch input:checked + .slider .icon {
+  transform: translateX(24px);
+}
+</style>
+
+<script>
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+
+const sunSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill=#5e7c8e viewBox="0 0 16 16">
+    <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0Zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5ZM16 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5ZM3 8a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H2.5A.5.5 0 0 1 3 8Zm11.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0ZM4.464 11.536a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0ZM13.657 13.657a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707ZM4.464 4.464a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707Z"/>
+  </svg>`;
+
+const moonSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill=var(--bs-primary) viewBox="0 0 16 16">
+    <path d="M6 .278a.768.768 0 0 1 .08.858 7.2 7.2 0 0 0-.88 3.46c0 4.02 3.28 7.28 7.32 7.28.53 0 1.04-.06 1.53-.16a.78.78 0 0 1 .81.32.73.73 0 0 1-.03.89A8.35 8.35 0 0 1 8.34 16C3.73 16 0 12.29 0 7.71 0 4.27 2.11 1.31 5.12.06A.75.75 0 0 1 6 .278Z"/>
+  </svg>`;
+
+function updateThemeIcon(isDark) {
+  themeIcon.innerHTML = isDark ? moonSVG : sunSVG;
+  document.body.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+themeToggle.addEventListener('change', () => {
+  updateThemeIcon(themeToggle.checked);
+});
+
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+
+themeToggle.checked = isDark;
+updateThemeIcon(isDark);
+</script>
+
+
+                        </div>
+                    </div>
+                </nav>
+                <div class="border-left"></div>
+                <div class="border-right"></div>
+            </div>
+            <div class="fancy-border">
+                <div class="border-left"></div>
+                <div class="border-right"></div><h1>How to model the world? Introduction to Laplace Neuron</h1>
+<hr />
+<p>A growing number of researchers in the AI field are convinced that <strong>Large Language Models</strong> (LLMs) might be all we need to reach <strong>Artificial General Intelligence</strong> (AGI). Some even go so far as to claim that LLMs are already building internal <strong>world models</strong>. And they might not be entirely wrong, if we reduce the idea of a "world model" to nothing more than next-token probability, derived from patterns in an abstract n-dimensional function space.</p>
+<p>But what if we take that term more seriously? What if a world model should actually represent... well, a world?</p>
+<p>And what is a world, anyway? How could anyone hope to represent it in the clean, formal language of mathematics? We may never fully grasp the whole of what a world is, not with its immense complexity and the intricate network of causal relationships between all kinds of entities.</p>
+<p>Still, for the sake of this post, let me propose one particular perspective: let’s think of the world as a <strong>hierarchy</strong> of <a href="https://en.wikipedia.org/wiki/Dynamical_system">dynamical systems</a>. In fact, let’s go further and say the world is the dynamical system that contains all other dynamical systems, except itself.</p>
+<p>So the question becomes: how do we model such a thing? Could well-known architectures like <a href="https://arxiv.org/abs/1706.03762">Transformers</a> or <a href="https://en.wikipedia.org/wiki/Recurrent_neural_network">Recurrent Neural Networks</a> (RNNs) be enough to manage the job? Or do we need an entirely new paradigm?</p>
+<br />
+<h2>Dynamical system as dynamical system's model</h2>
+<hr />
+<p><em>"A map is not the territory it represents, but, if correct, it has a similar structure to the territory, which accounts for its usefulness." — Alfred Korzybski</em></p>
+<p>What if the map was made of the same stuff as the territory?
+That may sound paradoxical, or even absurd because a model that fully replicates the system becomes that system. Models are simplified by design. That’s the point.</p>
+<p>Still, there is something interesting about the idea of what kind of simplification we choose.</p>
+<p>Take the <strong>brain</strong>. It clearly doesn't hold a full copy of the world, but it contains a highly effective model of it. One possible reason is that it shares a deep structural property with the world itself. The brain is a dynamical system. A <strong>nonlinear</strong> dynamical systems, nonetheless.</p>
+<p><strong>Biological neurons</strong> are not just static functions that map inputs to outputs. They have internal state. They evolve over time. They integrate signals, respond with delays, build up energy, decay, reset, and interact through feedback loops. They don’t just compute outputs from inputs, they "behave".</p>
+<p><strong>Artificial neurons</strong>, on the other hand, are fundamentally <strong>static</strong>. Their output is a direct function of their input at a single point in time. There is no inner process. No memory. No evolution, unless explicitly added by architectural tricks like recurrence.</p>
+<p>That might be one of the reasons biological systems are so good at modeling the world. Not because they are more powerful in a raw computational sense, but because they are structurally closer to the kind of thing they are modeling.</p>
+<p>In other words, the brain works as a simplified model of the world not just because of what it abstracts away, but because of what it keeps: its dynamic nature.</p>
+<p>So what if we used that idea more directly? What if we didn’t rely on stacks of static neurons to simulate motion, feedback, and temporal structure from the outside?</p>
+<p>What if we started with a dynamical system as the fundamental building block?</p>
+<p>Not because we want to recreate the world in full detail, but because a process might be the best way to model another process.</p>
+<br />
+<h2>Laplace Neuron</h2>
+<hr />
+<p>To make an artificial neuron that is dynamical in its essence, I’ll use a well-known concept from engineering called the <a href="https://en.wikipedia.org/wiki/Transfer_function">transfer function</a>. There are different ways to think about what a transfer function is, but the most intuitive one is that the transfer functions describe how the <strong>linear, time-invariant system</strong> response to the input signal or excitation. Basically, how a system reacts to being poked.</p>
+<p>Let's break down what "linear" and "time-invariant" actually mean:
+* Linear means the system obeys the principle of superposition: if you input a sum of signals, the output is the sum of the individual outputs, and scaling the input scales the output by the same factor 
+* Time-invariant means the system’s behavior does not change over time: if you delay the input by some amount, the output is simply delayed by the same amount, with no other changes.</p>
+<p>Transfer functions are a way to describe how systems behave over time. But instead of writing out full differential equations, we move into a different space, the \(s\) domain, also called the <a href="https://en.wikipedia.org/wiki/Laplace_transform">Laplace domain</a>.</p>
+<p>In the \(s\) domain, time becomes frequency. Derivatives turn into multiplications. What was complex and messy in the time domain becomes simpler, more compact. That’s why engineers and control theorists like it. And more importantly for us, it gives us a language to talk about dynamics, about how inputs change into outputs, not instantly, but through some process that unfolds in time.</p>
+<p>To keep it simple, I’ll use a well-known transfer function called <strong>First Order Plus Dead Time</strong> (FOPDT). It looks like this:</p>
+<div class="katex-wrapper">
+<p>$$
+H(s) = \frac{Y(s)}{U(s)} = e^{-\theta s}\frac{K}{\tau s + 1}
+$$
+</div>
+​</p>
+<p>This may look abstract, but it actually describes something very familiar: a system that waits a bit, then starts reacting gradually.</p>
+<p>Let’s break it down:</p>
+<ul>
+<li>
+<p>\(Y(s)\) is the output of the system in the \(s\) domain</p>
+</li>
+<li>
+<p>\(U(s)\) is the input signal in the \(s\) domain</p>
+</li>
+<li>
+<p>\(K\) is the gain — it tells you how much output you get per unit of input</p>
+</li>
+<li>
+<p>\(\tau\) is the time constant — how fast the system reacts. A small \(\tau\) means a quick response, large \(\tau\) means slower response</p>
+</li>
+<li>
+<p>\(\theta\) is the dead time — the delay before the system even starts responding</p>
+</li>
+<li>
+<p>\(s\) is the Laplace variable, \(s = \sigma + j \omega\), combining exponential decay and oscillation</p>
+</li>
+</ul>
+<p>So what does this function mean in practice?</p>
+<p>Imagine you flip a switch. The system doesn’t respond right away, that’s the dead time 
+\(\theta\). After that, the output starts rising, not instantly, but with a certain smoothness. That smoothness comes from \(\tau\). And how high the output goes, that depends on \(K\).</p>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="step" class="step-class responsive"  alt="Alt" src="../assets/img/step.png" title="Step response" />
+    </div>
+</p>
+<p>With just these three parameters, gain, time constant, and dead time, you can model a huge number of simple real-world processes. From heating up water to the way your muscles respond to a nerve signal.</p>
+<p>And this is the core idea I want to carry forward.</p>
+<p>Because if we want to model a system like the brain, or even just a single neuron, we need something that can describe change. Not just inputs and outputs, but the path between them. The delay, the buildup, the decay.</p>
+<br />
+<h2>Building up complexity</h2>
+<hr />
+<p>Since our current transfer function is linear, it’s time to introduce some nonlinearity to better resemble the kind of behavior we observe in biological neurons. Biological neurons are often associated with the idea of <strong>thresholds</strong>. There is a certain level of stimulation a neuron must receive before it "fires", a critical point it must cross before it starts propagating the signal forward. This concept is crucial if we want our <strong>Laplace Neuron</strong> to start behaving more like its biological counterpart.</p>
+<p>Let’s introduce what I call the \(\delta\)ReLU, defined by the following equation:
+<div class="katex-wrapper">
+$$
+\delta ReLU(x) = \begin{cases}
+        x &amp; \text{if } x&gt;\delta \\ 
+        0 &amp; \text{otherwise}
+    \end{cases}
+$$</p>
+</div>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="delta" class="delta-class responsive"  alt="Alt" src="../assets/img/delta.png" title="Delta ReLU" />
+    </div>
+</p>
+<p>The \(\delta\)ReLU is just a generalization on the familiar Rectified Linear Unit (ReLU). It works in much the same way: if the input is below a certain value, the output is zero, if the input crosses that value, it passes through linearly. The difference here is the parameter \(\delta\), which explicitly defines the firing threshold. This is the point where the neuron switches from silence to activity. Below \(\delta\), the neuron remains silent. Once the input breaches this threshold, the neuron becomes active, and the signal flows through.</p>
+<p>Why not just use regular ReLU you may ask?</p>
+<p>Suppose we are trying to model a constrained physical system, one that only operates in the positive domain. The regular ReLU won’t help us much here. It activates at zero, but that’s not a meaningful boundary in many real-world systems.
+\(\delta\)ReLU lets us set a threshold that actually corresponds to some meaningful constraint in the system we’re modeling.
+The same logic applies to biased systems, like biological neurons that fire at approximately \(-55 mV\). In that case, we’d simply set \(\delta = -55\).</p>
+<br />
+<h2>Now, what exactly causes a Laplace Neuron to fire?</h2>
+<hr />
+<p>Just like in the classic model of an artificial neuron, the Laplace Neuron gets excited by the weighted sum of all the other Laplace Neurons connected to it. Every input contributes its part. The sum is calculated, and if it crosses the threshold \(\delta\), the neuron responds.</p>
+<p>So with this, we have a structure that starts to look and behave more like a real neuron. It has dynamics through the transfer function. It has a threshold through \(\delta\)ReLU. And it interacts with other neurons through weighted connections.</p>
+<p>Now it's time to bring it all together, wrap everything into a single equation that captures the principle of <strong>Laplace Neuron</strong>.</p>
+<br />
+<h2>Mathematical definition of the Laplace Neuron</h2>
+<hr />
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="step" class="neuron_scheme-class responsive"  alt="Alt" src="../assets/img/neuron_scheme.png" title="Step response" />
+    </div>
+</p>
+<div class="katex-wrapper">
+<p>$$
+ Y(s) = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{K}{\tau s+1}}
+$$</p>
+</div>
+<ul>
+<li>
+<p>\(Y(s)\) is the output in the Laplace domain</p>
+</li>
+<li>
+<p>\(\delta ReLU\) is activation function</p>
+</li>
+<li>
+<p>\(\sum_{j=1}^{n} {w_j}{U_j(s)}\) is weighted sum of inputs</p>
+</li>
+<li>
+<p>\(e^{-\theta s}\frac{K}{\tau s+1}\) is first order plus dead time transfer function.</p>
+</li>
+</ul>
+<p>or more intuitive form in time domain:</p>
+<div class="katex-wrapper">
+<p>$$
+ y(t) = \mathcal{L}^{-1}{\ \mathcal{L}{\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ u_j(t))  }\cdot e^{-\theta s}\frac{K}{\tau s+1}}}
+$$
+</div>
+where:</p>
+<ul>
+<li><p>\(\mathcal{L}{f}(s) = \int_{0}^{\infty} f(t)e^{-st} \, dt \) is the Laplace transform</p></li>
+</ul>
+<p>We can also rewrite the transfer function in the time domain and represent it as a <a href="https://en.wikipedia.org/wiki/State-space_representation">state-space</a> model as follows:
+<div class="katex-wrapper">
+$$
+\dot{x}(t) = \delta ReLU[A\cdot x(t) + B\cdot u(t - \theta)]
+$$
+</div>
+<div class="katex-wrapper">
+$$
+y(t) = C\cdot x(t)
+$$
+</div>
+where:</p>
+<ul>
+<li>
+<p>\(x(t)\) is state vector</p>
+</li>
+<li>
+<p>\(u(t - \theta)\) is delayed input vector</p>
+</li>
+<li>
+<p>\(y(t)\) is output vector</p>
+</li>
+<li>
+<p>\(A,B,C\) are state-space matrices defined by transfer function</p>
+</li>
+</ul>
+<p>The state-space representation might look oddly familiar. Once we discretize it, it becomes the standard formulation of an Recurrent Neural Network (RNN).</p>
+<p>Surprised? You shouldn’t be.</p>
+<p>At its core, the RNN is just a system that loops its own state through time. It takes an input, blends it with memory, and hands itself back the result, over and over again. In other words, it is a dynamical system.</p>
+<p>But here's the twist: what we’ve done here is not just rediscover the RNN. We've reinterpreted it through the lens of continuous and constrained physical systems. The Laplace Neuron doesn’t just mimic the RNN update rule, it is one, but with a structure that maps more naturally to real-world dynamics.</p>
+<p>So maybe the architectures we've had all along weren't completely off. Maybe they just needed to be seen from the right angle.</p>
+<hr />
+<p>In the next post, I’ll dive into the differences between the Laplace Neuron and the classic RNN, and explore why the Laplace Neuron might hold a serious advantage when it comes to the learning process, by solving the vanishing and exploding gradient problem.</p>
+<p>Stay tuned. It gets interesting.</p>
+<hr />
+<h3>References:</h3>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Dynamical_system">Dynamical system</a></li>
+<li><a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Recurrent_neural_network">Recurrent neural network</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Transfer_function">Transfer function</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Laplace_transform">Laplace transform</a></li>
+<li><a href="https://en.wikipedia.org/wiki/State-space_representation">State-space representation</a></li>
+</ol>
+                <hr>
+                <div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-6"><a href="#"></a></div>
+                            <div class="col-6 text-end"><a href="gradient_calculation.html"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-right">
+                                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"></path>
+                                    </svg></a></div>
+                        </div>
+                    </div>
+                </div><button class="btn btn-primary" id="scrollToTopBtn" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up" style="font-size: 26px;">
+                        <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"></path>
+                    </svg></button>
+            </div>
+            <div id="end" class="fancy-border"></div>
+        </div>
+    </div>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/js/scrolltop.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body);"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Gradient flow in Laplace Neural Network</title>
+    <meta name="description" content="This post breaks down how gradients propagate through layers in Laplace neural network and how to avoid vanishing and exploding gradients. With a focus on the equations behind backpropagation in Laplace domain, it offers a clear, research-driven explanation of how learning is sustained inside Laplace neural networks.">
+    <meta property="og:image" content="https://abibulic.github.io/assets/img/gradient_flow.jpg">
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Share+Tech+Mono&amp;display=swap">
+    <link rel="stylesheet" href="../assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="../assets/css/equations.css">
+    <link rel="stylesheet" href="../assets/css/scrolltop.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/theme_switch.css">
+</head>
+
+<body style="font-family: 'Share Tech Mono', monospace;">
+    <div class="limited-width">
+        <div class="notebook-grid">
+            <div id="navbar-div" class="fancy-border">
+                <nav class="navbar navbar-expand-md text-uppercase text-end">
+                    <div class="container-fluid"><a class="navbar-brand" href="#"></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1" style="border-color: var(--bs-success);"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                        <div class="collapse navbar-collapse" id="navcol-1">
+                            <ul class="navbar-nav mx-auto underline-links">
+                                <li class="nav-item"><a class="nav-link" href="../index.html">About</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../blog.html">Blog</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../cv.html">CV</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../contact.html">Contact</a></li>
+                            </ul><div class="theme-switcher">
+  <label class="switch">
+    <input type="checkbox" id="themeToggle">
+    <span class="slider">
+      <span class="icon" id="themeIcon"></span>
+    </span>
+  </label>
+</div>
+
+<style>
+.theme-switcher {
+  display: inline-block;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #f1efee;
+  transition: background-color 0.3s;
+  border-radius: 34px;
+  border: 1px solid var(--bs-success); /* or any color you like */
+}
+
+.icon {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease-in-out;
+  color: #fff;
+}
+    
+@media (min-width: 768px) {
+  .icon {
+    top: 0px;       /* move icon down */
+  }
+}
+
+.switch input:checked + .slider {
+  background-color: #102131;
+}
+
+.switch input:checked + .slider .icon {
+  transform: translateX(24px);
+}
+</style>
+
+<script>
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+
+const sunSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill=#5e7c8e viewBox="0 0 16 16">
+    <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0Zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5ZM16 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5ZM3 8a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H2.5A.5.5 0 0 1 3 8Zm11.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0ZM4.464 11.536a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0ZM13.657 13.657a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707ZM4.464 4.464a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707Z"/>
+  </svg>`;
+
+const moonSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill=var(--bs-primary) viewBox="0 0 16 16">
+    <path d="M6 .278a.768.768 0 0 1 .08.858 7.2 7.2 0 0 0-.88 3.46c0 4.02 3.28 7.28 7.32 7.28.53 0 1.04-.06 1.53-.16a.78.78 0 0 1 .81.32.73.73 0 0 1-.03.89A8.35 8.35 0 0 1 8.34 16C3.73 16 0 12.29 0 7.71 0 4.27 2.11 1.31 5.12.06A.75.75 0 0 1 6 .278Z"/>
+  </svg>`;
+
+function updateThemeIcon(isDark) {
+  themeIcon.innerHTML = isDark ? moonSVG : sunSVG;
+  document.body.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+themeToggle.addEventListener('change', () => {
+  updateThemeIcon(themeToggle.checked);
+});
+
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+
+themeToggle.checked = isDark;
+updateThemeIcon(isDark);
+</script>
+
+
+                        </div>
+                    </div>
+                </nav>
+                <div class="border-left"></div>
+                <div class="border-right"></div>
+            </div>
+            <div class="fancy-border">
+                <div class="border-left"></div>
+                <div class="border-right"></div><h1>Gradient flow in Laplace Neural Network</h1>
+<hr />
+<p>In the previous post, I promised to show how the <strong>Laplace Neuron</strong> might be the key to solving the vanishing and exploding gradient problem. But before we go there, we need to set the stage by building the full network made out of Laplace neurons. Let’s call it the <strong>Laplace Neural Network</strong>.</p>
+<p>I’ll focus on a simple setup: a fully connected network with a single input node, two hidden layers, each with 3 Laplace neurons, and one neuron in the output layer. Nothing too deep, just enough to capture the dynamics.</p>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img alt="Alt" class="network-class responsive" src="../assets/img/network2.png" title="Laplace Neural Network" />
+    </div>
+</p>
+<p>Now, unlike the classical artificial neuron, which is really just a static linear mapping followed by a nonlinearity, the Laplace neuron comes with more moving components. It has memory, delay, and time dynamics, all packed into a single unit. Which means more parameters to tune. But that also means more expressive power, and potentially a much better fit to the systems we’re trying to model.</p>
+<p>Let’s revisit the equation of the Laplace Neuron:</p>
+<div class="katex-wrapper">
+<p>$$
+ Y(s) = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{K}{\tau s+1}}
+$$
+</p>
+</div>
+<p>We can simplify things a bit. The gain term \(K\) can be incorporated into the weights \(w_j\), so we don’t need to learn it separately. That leaves us with three key components: the weights \(w_j\), the delay \(\theta\), and the time constant \(\tau\).</p>
+<p>To optimize these, we’ll use good old backpropagation. But we're not operating in time. We're doing it in the Laplace domain.</p>
+<br />
+<h2>Backpropagation in Laplace domain</h2>
+<hr />
+<p>Here’s the forward pass of the Laplace neural network we’ll be using as our example:</p>
+<p>
+<div class="katex-wrapper">
+$$
+Z_1(s) = N_1 \cdot (w_{U1}U(s) + b_1)
+$$</p>
+<p>$$
+Z_2(s) = N_2 \cdot (w_{U2}U(s) + b_2)
+$$</p>
+<p>$$
+Z_3(s) = N_3 \cdot (w_{U3}U(s) + b_3)
+$$</p>
+<p>$$
+Z_4(s) = N_4 \cdot (w_{14}Z_1(s) + w_{24}Z_2(s) + w_{34}Z_3(s) + b_4)
+$$</p>
+<p>$$
+Z_5(s) = N_5 \cdot (w_{15}Z_1(s) + w_{25}Z_2(s) + w_{35}Z_3(s) + b_5)
+$$</p>
+<p>$$
+Z_6(s) = N_6 \cdot (w_{16}Z_1(s) + w_{26}Z_2(s) + w_{36}Z_3(s) + b_6)
+$$</p>
+<p>$$
+Y(s) =  N_7 \cdot (w_{47}Z_4(s) + w_{57}Z_5(s) + w_{67}Z_6(s) + b_7)
+$$
+</div>
+</p>
+<p>where:</p>
+<ul>
+<li>
+<p>\(Y(s)\) is the output of the network</p>
+</li>
+<li>
+<p>\(N_j\)  is the abstraction representing the \(j\)-th Laplace Neuron</p>
+</li>
+<li>
+<p>\(Z_j(s)\) is the output signal from the \(j\)-th neurone</p>
+</li>
+<li>
+<p>\(w_{pq}\) is the weight parameter of the connection from neuron \(N_p\) to neuron \(N_q\)</p>
+</li>
+<li>
+<p>\(b_j\) is the bias parameter of the \(j\)-th neurone</p>
+</li>
+</ul>
+<p>Now, let's explore how to backpropagate the error, not through time, but through the structure of the network in the \(s\) (Laplace) domain.</p>
+<p>We’ve got an output signal from the Laplace neural network, and now it’s time to see how well it holds up against reality. So we compare it to the measured, or let’s say, the true signal. That comparison gives us an error, a measure of how close (or far) our generated output is from what actually happens out there in the world. That error also tells us in which direction we need to adjust the system’s parameters to get closer to the desired result.</p>
+<p>Now the goal is simple: tweak the network parameters so that this error shrinks, as close to zero as we can get it. Every parameter, every weight, every internal constant in every Laplace neuron must be updated in the right direction.</p>
+<p>And we’ll do that the by writing out the <a href="https://en.wikipedia.org/wiki/Partial_derivative">partial derivatives</a>, one by one, tracing how the error flows through the network, from the output all the way back to the input.</p>
+<p>This time, though, the path of the gradient isn’t traced through a static feedforward map, it’s traced through time-evolving, memory-bearing dynamical systems.</p>
+<p>Let’s start writing down the update rule of weights and biases:</p>
+
+<div class="katex-wrapper">
+<!-- w67 -->
+<p>$$
+\frac{\partial error}{\partial w_{67}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{67}} = \frac{\partial error}{\partial Y(s)} \cdot N_7 \cdot Z_{6}(s)
+$$</p>
+<!-- w57 -->
+<p>$$
+\frac{\partial error}{\partial w_{57}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{57}} = \frac{\partial error}{\partial Y(s)} \cdot N_7 \cdot Z_{5}(s)
+$$</p>
+<!-- w47 -->
+<p>$$
+\frac{\partial error}{\partial w_{47}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{47}} = \frac{\partial error}{\partial Y(s)} \cdot N_7 \cdot Z_{4}(s)
+$$</p>
+<!-- w36 -->
+<p>$$
+\frac{\partial error}{\partial w_{36}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{36}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7 \cdot N_6 \cdot Z_{3}(s)
+$$</p>
+<!-- w26 -->
+<p>$$
+\frac{\partial error}{\partial w_{26}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{26}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7 \cdot N_6 \cdot Z_{2}(s)
+$$</p>
+<!-- w16 -->
+<p>$$
+\frac{\partial error}{\partial w_{16}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{16}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7 \cdot N_6 \cdot Z_{1}(s)
+$$</p>
+<!-- w35 -->
+<p>$$
+\frac{\partial error}{\partial w_{35}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{35}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7 \cdot N_5 \cdot Z_{3}(s)
+$$</p>
+<!-- w25 -->
+<p>$$
+\frac{\partial error}{\partial w_{25}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{25}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7 \cdot N_5 \cdot Z_{2}(s)
+$$</p>
+<!-- w15 -->
+<p>$$
+\frac{\partial error}{\partial w_{15}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{15}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7 \cdot N_5 \cdot Z_{1}(s)
+$$</p>
+<!-- w34 -->
+<p>$$
+\frac{\partial error}{\partial w_{34}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{34}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{3}(s)
+$$</p>
+<!-- w24 -->
+<p>$$
+\frac{\partial error}{\partial w_{32}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{22}(s)
+$$</p>
+<!-- w14 -->
+<p>$$
+\frac{\partial error}{\partial w_{14}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{14}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{1}(s)
+$$</p>
+</div>
+<div class="katex-wrapper">
+<!-- wU3 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial w_{U3}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial w_{U3}}  + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial w_{U3}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial w_{U3}} \right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{36} N_6 \cdot N_3 \cdot U(s) + w_{57} N_7 \cdot w_{35} N_5 \cdot N_3 \cdot U(s) + w_{47} N_7 \cdot w_{34} N_4 \cdot N_3 \cdot U(s) \right]
+\end{aligned}
+$$</p>
+<!-- wU2 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial w_{U2}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial w_{U2}}  + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial w_{U2}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial w_{U2}} \right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{26} N_6 \cdot N_2 \cdot U(s) + w_{57} N_7 \cdot w_{25} N_5 \cdot N_2 \cdot U(s) + w_{47} N_7 \cdot w_{24} N_4 \cdot N_2 \cdot U(s) \right]
+\end{aligned}
+$$</p>
+<!-- wU1 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial w_{U1}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial w_{U1}}  + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial w_{U1}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial w_{U1}} \right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{16} N_6 \cdot N_1 \cdot U(s) + w_{57} N_7 \cdot w_{15} N_5 \cdot N_1 \cdot U(s) + w_{47} N_7 \cdot w_{14} N_4 \cdot N_1 \cdot U(s) \right]
+\end{aligned}
+$$</p>
+</div>
+<div class="katex-wrapper">
+<!-- b7 -->
+<p>$$
+\frac{\partial error}{\partial b_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial b_7} = \frac{\partial error}{\partial Y(s)} \cdot N_7
+$$</p>
+<!-- b6 -->
+<p>$$
+\frac{\partial error}{\partial b_{6}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial b_{6}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7 \cdot N_6
+$$</p>
+<!-- b5 -->
+<p>$$
+\frac{\partial error}{\partial b_{5}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial b_{5}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7 \cdot N_5
+$$</p>
+<!-- b4 -->
+<p>$$
+\frac{\partial error}{\partial b_{4}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial b_{4}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7 \cdot N_4
+$$</p>
+</div>
+<div class="katex-wrapper">
+<!-- b3 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial b_{3}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial b_{3}} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial b_{3}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial b_{3}}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7 \cdot w_{36}N_6 \cdot N_3 + w_{57}N_7 \cdot w_{35}N_5 \cdot N_3 + w_{47}N_7 \cdot w_{34}N_4 \cdot N_3 \right]
+\end{aligned}
+$$</p>
+<!-- b2 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial b_{2}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial b_{2}} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial b_{2}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial b_{2}}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7 \cdot w_{26}N_6 \cdot N_2 + w_{57}N_7 \cdot w_{25}N_5 \cdot N_2 + w_{47}N_7 \cdot w_{24}N_4 \cdot N_2 \right]
+\end{aligned}
+$$</p>
+<!-- b1 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial b_{1}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial b_{1}} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial b_{1}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial b_{1}}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7 \cdot w_{16}N_6 \cdot N_1 + w_{57}N_7 \cdot w_{15}N_5 \cdot N_1 + w_{47}N_7 \cdot w_{14}N_4 \cdot N_1 \right]
+\end{aligned}
+$$</p>
+</div>
+
+<br />
+<p>And now we'll write down the updating rules of parameters \(\tau\) and \(\theta\) for every Laplace neuron:</p>
+<br />
+<div class="katex-wrapper">
+<!-- tau7 -->
+<p>$$
+\frac{\partial error}{\partial \tau_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial N_7} \cdot \frac{\partial N_7}{\partial \tau_7} = \frac{\partial error}{\partial Y(s)} \cdot (w_{47}Z_{4}(s) + w_{57}Z_{5}(s) + w_{67}Z_{6}(s)) \cdot \frac{\partial N_7}{\partial \tau_7}
+$$</p>
+<!-- theta7 -->
+<p>$$
+\frac{\partial error}{\partial \theta_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial N_7} \cdot \frac{\partial N_7}{\partial \theta_7} = \frac{\partial error}{\partial Y(s)} \cdot (w_{47}Z_{4}(s) + w_{57}Z_{5}(s) + w_{67}Z_{6}(s)) \cdot \frac{\partial N_7}{\partial \theta_7}
+$$</p>
+<!-- tau6 -->
+<p>$$
+\frac{\partial error}{\partial \tau_6} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial N_6} \cdot \frac{\partial N_6}{\partial \tau_6} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7 \cdot (w_{16}Z_{1}(s) + w_{26}Z_{2}(s) + w_{36}Z_{3}(s)) \cdot \frac{\partial N_6}{\partial \tau_6}
+$$</p>
+<!-- theta6 -->
+<p>$$
+\frac{\partial error}{\partial \theta_6} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial N_6} \cdot \frac{\partial N_6}{\partial \theta_6} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7 \cdot (w_{16}Z_{1}(s) + w_{26}Z_{2}(s) + w_{36}Z_{3}(s)) \cdot \frac{\partial N_6}{\partial \theta_6}
+$$</p>
+<!-- tau5 -->
+<p>$$
+\frac{\partial error}{\partial \tau_5} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial N_5} \cdot \frac{\partial N_5}{\partial \tau_5} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7 \cdot (w_{15}Z_{1}(s) + w_{25}Z_{2}(s) + w_{35}Z_{3}(s)) \cdot \frac{\partial N_5}{\partial \tau_5}
+$$</p>
+<!-- theta5 -->
+<p>$$
+\frac{\partial error}{\partial \theta_5} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial N_5} \cdot \frac{\partial N_5}{\partial \theta_5} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7 \cdot (w_{15}Z_{1}(s) + w_{25}Z_{2}(s) + w_{35}Z_{3}(s)) \cdot \frac{\partial N_5}{\partial \theta_5}
+$$</p>
+<!-- tau4 -->
+<p>$$
+\frac{\partial error}{\partial \tau_4} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial N_4} \cdot \frac{\partial N_4}{\partial \tau_4} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7 \cdot (w_{14}Z_{1}(s) + w_{24}Z_{2}(s) + w_{34}Z_{3}(s)) \cdot \frac{\partial N_4}{\partial \tau_4}
+$$</p>
+<!-- theta4 -->
+<p>$$
+\frac{\partial error}{\partial \theta_4} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial N_4} \cdot \frac{\partial N_4}{\partial \theta_4} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7 \cdot (w_{14}Z_{1}(s) + w_{24}Z_{2}(s) + w_{34}Z_{3}(s)) \cdot \frac{\partial N_4}{\partial \theta_4}
+$$</p>
+</div>
+<div class="katex-wrapper">
+<!-- tau3 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial \tau_3} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \tau_3} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \tau_3} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \tau_3}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{36} N_6 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \tau_3} + w_{57} N_7 \cdot w_{35} N_5 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \tau_3} + w_{47} N_7 \cdot w_{34} N_4 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \tau_3}\right]
+\end{aligned}
+$$</p>
+<!-- theta3 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial \theta_3} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \theta_3} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \theta_3} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \theta_3}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{36} N_6 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \theta_3} + w_{57} N_7 \cdot w_{35} N_5 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \theta_3} + w_{47} N_7 \cdot w_{34} N_4 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \theta_3}\right]
+\end{aligned}
+$$</p>
+<!-- tau2 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial \tau_2} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \tau_2} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \tau_2} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \tau_2}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{26} N_6 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \tau_2} + w_{57} N_7 \cdot w_{25} N_5 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \tau_2} + w_{47} N_7 \cdot w_{24} N_4 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \tau_2}\right]
+\end{aligned}
+$$</p>
+<!-- theta2 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial \theta_2} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \theta_2} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \theta_2} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \theta_2}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{26} N_6 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \theta_2} + w_{57} N_7 \cdot w_{25} N_5 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \theta_2} + w_{47} N_7 \cdot w_{24} N_4 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \theta_2}\right]
+\end{aligned}
+$$</p>
+<!-- tau1 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial \tau_1} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \tau_1} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \tau_1} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \tau_1}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{16} N_6 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \tau_1} + w_{57} N_7 \cdot w_{15} N_5 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \tau_1} + w_{47} N_7 \cdot w_{14} N_4 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \tau_1}\right]
+\end{aligned}
+$$</p>
+<!-- theta1 -->
+<p>$$
+\begin{aligned}
+\frac{\partial error}{\partial \theta_1} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \theta_1} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \theta_1} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \theta_1}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{16} N_6 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \theta_1} + w_{57} N_7 \cdot w_{15} N_5 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \theta_1} + w_{47} N_7 \cdot w_{14} N_4 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \theta_1}\right]
+\end{aligned}
+$$</p>
+</div>
+
+<p>This might look a bit intimidating at first glance, but it’s not as bad as it seems. A lot of structure hides in these equations. There are patterns, and once you spot them, the whole thing starts to simplify.
+That said, a careful reader might notice that we’re not quite done yet.
+To properly update our parameters, we still need to say what \(\frac{\partial N}{\partial \tau}\) and \(\frac{\partial N}{\partial \theta}\) actually mean. So let’s do that.</p>
+<p>Remember, \(N\) is just an abstraction. It represents the behavior of a Laplace neuron receiving weighted inputs and firing after threshold is reach.</p>
+<p>Now, to adjust the internal parameters \(\tau\) and \(\theta\), we need to partially differentiate this abstraction. In other words, we have to unpack what \(N\) is doing with respect to each of these values, so we can know exactly how a change in one affects the overall output.</p>
+<p>Let’s write it out:</p>
+<div class="katex-wrapper">
+<p>$$
+\frac{\partial N}{\partial \tau} = \frac{\partial (\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}})}{\partial \tau} = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{-s}{(\tau s+1)^2}}
+$$</p>
+<p>$$
+\frac{\partial N}{\partial \theta} = \frac{\partial (\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}})}{\partial \theta} = \delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{-s}{\tau s+1}}
+$$</p>
+</div>
+<p>We can also write out the partial derivative of the \(\delta\)ReLU, just to get some intuition about what happens to the derivative when the threshold is reached:</p>
+<div class="katex-wrapper">
+<p>$$
+\frac{\partial N}{\partial \delta ReLU} = \frac{\partial (\delta ReLU (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}})}{\partial \delta ReLU} = \begin{cases}
+        (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}}) &amp; \text{if } x&gt;\delta \\ 
+        0 &amp; \text{otherwise}
+    \end{cases}
+$$</p>
+</div>
+<p>which means, if the threshold isn’t reached, there will be no gradient flow through that branch during backpropagation. And that makes sense since that branch didn’t contribute to the final error, it shouldn’t be part of the update.</p>
+<br />
+<h2>Stability</h2>
+<hr />
+<p>So how to maintain the training process stable?</p>
+<p>We definitely don’t want our network suddenly returning out <em>NaN</em> or <em>Inf</em> values mid-training. That’s usually a sign that something went off the rails, literally. Fortunately, there’s a simple trick we can borrow from <strong>Control Theory</strong>.</p>
+<p>In control systems, the stability of a linear system is determined by the location of its <a href="https://en.wikipedia.org/wiki/Zeros_and_poles">poles</a>. </p>
+<p>So what are poles?</p>
+<p>Let’s write the transfer function in the standard form:</p>
+<p>$$
+H(s) = \frac{num(s)}{den(s)}
+$$</p>
+<p>Polese are defined as the roots of the denominator polynomial of the transfer function, where \(den(s) = 0\).
+In our example the transfer function has:</p>
+<p>$$
+den(s) = \tau s + 1
+$$</p>
+<p>which means we get a single pole at:</p>
+<p>$$
+s = -\frac{1}{\tau}
+$$</p>
+<p>Now, here’s the key insight: the position of that pole in the complex plane tells us whether a system is stable, unstable or marginally stable.</p>
+<ul>
+<li>
+<p>If the pole lies in the open left-half of the complex plane, the system is stable.</p>
+</li>
+<li>
+<p>If any pole crosses into the right-half, the system becomes unstable.</p>
+</li>
+<li>
+<p>And if a pole lands right on the imaginary axis (real part is zero), the system is marginally stable. It might oscillate forever without settling.</p>
+</li>
+</ul>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="step" class="poles-class responsive"  alt="Alt" src="../assets/img/poles.png" title="Stability" />
+    </div>
+</p>
+<p>So what does this mean for our training process?
+Well, to keep its dynamics stable, we need to make sure that the pole stays on the left side. In our case, that simply means keeping \(\tau &gt; 0\) If \(\tau\) becomes zero or negative during training, the pole jumps into the unstable zone, and thins start exploding numerically.</p>
+<p>To prevent that, we can apply a simple constraint during training: clip the gradient so that \(\tau\) never drops below a small positive value. Something like \(\tau > \epsilon\), where \(\epsilon\) is an infinitesimally small number, just enough to keep things on the safe side of the plane.</p>
+<p>If every neuron in the network maintains this constraint, if every little system stays stable, the whole network remains stable too.</p>
+<hr />
+<p>Now that we’ve shown how the Laplace Neural Network updates its parameters in the Laplace domain, it’s time to test it on some simple examples and compare its performance to an RNN of the same complexity.</p>
+<p>Stay tuned for the next post, where we’ll see how the Laplace Neural Network stacks up against the RNN on a basic linear dynamical system and whether it can extrapolate outside the training distribution effectively.</p>
+<p>It gets interesting.</p>
+<hr />
+<h3>References:</h3>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Backpropagation">Backpropagation</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Partial_derivative">Partial derivative</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Zeros_and_poles">Zeros and poles</a></li>
+
+</ol>
+                <hr>
+                <div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-6"><a href="laplace_neuron.html"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-left">
+                                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"></path>
+                                    </svg></a></div>
+                            <div class="col-6 text-end"><a href="#"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-right">
+                                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"></path>
+                                    </svg></a></div>
+                        </div>
+                    </div>
+                </div><button class="btn btn-primary" id="scrollToTopBtn" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up" style="font-size: 26px;">
+                        <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"></path>
+                    </svg></button>
+            </div>
+            <div id="end" class="fancy-border"></div>
+        </div>
+    </div>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/js/scrolltop.js"></script>
+</body>
+
+</html>
