@@ -161,12 +161,12 @@ That may sound paradoxical, or even absurd because a model that fully replicates
 <br />
 <h2>Laplace Neuron</h2>
 <hr />
-<p>To make an artificial neuron that is dynamical in its essence, I’ll use a well-known concept from engineering called the <a href="https://en.wikipedia.org/wiki/Transfer_function">transfer function</a>. There are different ways to think about what a transfer function is, but the most intuitive one is that the transfer functions describe how the <strong>linear, time-invariant system</strong> response to the input signal or excitation. Basically, how a system reacts to being poked.</p>
+<p>To make an artificial neuron that is dynamical in its essence, I’ll use a well-known concept from engineering called the <a href="https://en.wikipedia.org/wiki/Transfer_function">transfer function</a>. There are different ways to think about what a transfer function is, but the most intuitive one is that the transfer functions describe how the <strong>linear, time-invariant system</strong> responds to the input signal or excitation. Basically, how a system reacts to being poked.</p>
 <p>Let's break down what "linear" and "time-invariant" actually mean:
 * Linear means the system obeys the principle of superposition: if you input a sum of signals, the output is the sum of the individual outputs, and scaling the input scales the output by the same factor 
 * Time-invariant means the system’s behavior does not change over time: if you delay the input by some amount, the output is simply delayed by the same amount, with no other changes.</p>
 <p>Transfer functions are a way to describe how systems behave over time. But instead of writing out full differential equations, we move into a different space, the \(s\) domain, also called the <a href="https://en.wikipedia.org/wiki/Laplace_transform">Laplace domain</a>.</p>
-<p>In the \(s\) domain, time becomes frequency. Derivatives turn into multiplications. What was complex and messy in the time domain becomes simpler, more compact. That’s why engineers and control theorists like it. And more importantly for us, it gives us a language to talk about dynamics, about how inputs change into outputs, not instantly, but through some process that unfolds in time.</p>
+<p>In the \(s\) domain, time becomes complex frequency. Derivatives turn into multiplications. What was complex and messy in the time domain becomes simpler, more compact. That’s why engineers and control theorists like it. And more importantly for us, it gives us a language to talk about dynamics, about how inputs change into outputs, not instantly, but through some process that unfolds in time.</p>
 <p>To keep it simple, I’ll use a well-known transfer function called <strong>First Order Plus Dead Time</strong> (FOPDT). It looks like this:</p>
 <div class="katex-wrapper">
 <p>$$
@@ -205,6 +205,7 @@ $$
         <img id="step" class="step-class responsive"  alt="Alt" src="../assets/img/step.png" title="Step response" />
     </div>
 </p>
+<br/>
 <p>With just these three parameters, gain, time constant, and dead time, you can model a huge number of simple real-world processes. From heating up water to the way your muscles respond to a nerve signal.</p>
 <p>And this is the core idea I want to carry forward.</p>
 <p>Because if we want to model a system like the brain, or even just a single neuron, we need something that can describe change. Not just inputs and outputs, but the path between them. The delay, the buildup, the decay.</p>
@@ -227,6 +228,7 @@ $$</p>
         <img id="delta" class="delta-class responsive"  alt="Alt" src="../assets/img/delta.png" title="Delta ReLU" />
     </div>
 </p>
+<br/>
 <p>The \(\delta\)ReLU is just a generalization on the familiar Rectified Linear Unit (ReLU). It works in much the same way: if the input is below a certain value, the output is zero, if the input crosses that value, it passes through linearly. The difference here is the parameter \(\delta\), which explicitly defines the firing threshold. This is the point where the neuron switches from silence to activity. Below \(\delta\), the neuron remains silent. Once the input breaches this threshold, the neuron becomes active, and the signal flows through.</p>
 <p>Why not just use regular ReLU you may ask?</p>
 <p>Suppose we are trying to model a constrained physical system, one that only operates in the positive domain. The regular ReLU won’t help us much here. It activates at zero, but that’s not a meaningful boundary in many real-world systems.
@@ -249,7 +251,7 @@ The same logic applies to biased systems, like biological neurons that fire at a
 </p>
 <div class="katex-wrapper">
 <p>$$
- Y(s) = \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1}
+ Y(s) = \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1}
 $$</p>
 </div>
 <ul>
@@ -265,19 +267,19 @@ $$</p>
 <li>
 <p>\(e^{-\theta s}\frac{K}{\tau s+1}\) is first order plus dead time transfer function</p>
 </li>
-<li><p>\(\mathcal{L} \left[ {f}(s) \right] = \int_{0}^{\infty} f(t)e^{-st} \, dt \) is the Laplace transform</p></li>
+<li><p>\(\mathcal{L} \left {f}(s) \right] = \int_{0}^{\infty} f(t)e^{-st} \, dt \) is the Laplace transform</p></li>
 <li><p>\(\mathcal{L}^{-1}\) is the inverse of the Laplace transform</p></li>
 </ul>
-<p>or more intuitive form in time domain:</p>
+<p>Or, in a more intuitive time-domain form:</p>
 <div class="katex-wrapper">
 <p>$$
- y(t) = \mathcal{L}^{-1} \left[ \mathcal{L} \left( \delta \mathrm{ReLU} \left( \sum_{j=1}^{n} w_j \, u_j(t) \right) \right) \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1} \right]
+ y(t) = \mathcal{L}^{-1} \left\{ \mathcal{L} \left[ \delta \mathrm{ReLU} \left( \sum_{j=1}^{n} w_j \, u_j(t) \right) \right] \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1} \right\}
 $$
 </div>
 <p>We can also rewrite the transfer function in the time domain and represent it as a <a href="https://en.wikipedia.org/wiki/State-space_representation">state-space</a> model as follows:
 <div class="katex-wrapper">
 $$
-\dot{x}(t) = \delta\mathrm{ReLU}[A\cdot x(t) + B\cdot u(t - \theta)]
+\dot{x}(t) = A\cdot x(t) + B\cdot \delta\mathrm{ReLU}[u(t - \theta)]
 $$
 </div>
 <div class="katex-wrapper">
@@ -300,7 +302,7 @@ where:</p>
 <p>\(A,B,C\) are state-space matrices defined by transfer function</p>
 </li>
 </ul>
-<p>The state-space representation might look oddly familiar. Once we discretize it, it becomes the standard formulation of an Recurrent Neural Network (RNN).</p>
+<p>The state-space representation might look oddly familiar. Once we discretize it, it almost becomes the vanilla formulation of a Recurrent Neural Network (RNN).</p>
 <p>Surprised? You shouldn’t be.</p>
 <p>At its core, the RNN is just a system that loops its own state through time. It takes an input, blends it with memory, and hands itself back the result, over and over again. In other words, it is a dynamical system.</p>
 <p>But here's the twist: what we’ve done here is not just rediscover the RNN. We've reinterpreted it through the lens of continuous and constrained physical systems. The Laplace Neuron doesn’t just mimic the RNN update rule, it is one, but with a structure that maps more naturally to real-world dynamics.</p>
@@ -309,6 +311,19 @@ where:</p>
 <p>In the next post, I’ll dive into the differences between the Laplace Neuron and the classic RNN, and explore why the Laplace Neuron might hold a serious advantage when it comes to the learning process, by solving the vanishing and exploding gradient problem.</p>
 <p>Stay tuned. It gets interesting.</p>
 <hr />
+<h3>Related work</h3>
+<ul>
+<li>
+<p><a href="https://www.mathworks.com/help/ident/ug/what-are-hammerstein-wiener-models.html?utm_source=chatgpt.com">Hammerstein/Wiener</a> models: Static nonlinearity followed by LTI cascades. Laplace neuron is Hammerstein type of model (nonlinearity is on the input).</p>
+</li>
+<li>
+<p>Continuous-time neural models: <a href="https://arxiv.org/pdf/1806.07366">Neural ODEs</a>; <a href="https://arxiv.org/pdf/2006.04439">Liquid Time-constant Networks</a>.</p>
+</li>
+<li>
+<p>State-space models (SSMs): <a href="https://arxiv.org/pdf/2111.00396">S4</a>/S4D and successors (long-range sequence modeling via learned linear dynamics); Laplace neuron is a first-order, interpretable variant with explicit 
+\(K\), \(\tau\) and \(\theta\).</p>
+</li>
+</ul>
 <h3>References:</h3>
 <ol>
 <li><a href="https://en.wikipedia.org/wiki/Dynamical_system">Dynamical system</a></li>
@@ -317,6 +332,10 @@ where:</p>
 <li><a href="https://en.wikipedia.org/wiki/Transfer_function">Transfer function</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Laplace_transform">Laplace transform</a></li>
 <li><a href="https://en.wikipedia.org/wiki/State-space_representation">State-space representation</a></li>
+<li><a href="https://www.mathworks.com/help/ident/ug/what-are-hammerstein-wiener-models.html?utm_source=chatgpt.com">Hammerstein/Wiener model</a></li>
+<li><a href="https://arxiv.org/pdf/1806.07366">Neural ODEs</a></li>
+<li><a href="https://arxiv.org/pdf/2006.04439">Liquid Time-constant Networks</a></li>
+<li><a href="https://arxiv.org/pdf/2111.00396">Efficiently Modeling Long Sequences with Structured State Spaces</a></li>
 </ol>
                 <hr>
                 <div>

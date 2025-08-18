@@ -146,6 +146,7 @@ updateThemeIcon(isDark);
         <img alt="Alt" class="network-class responsive" src="../assets/img/network2.png" title="Laplace Neural Network" />
     </div>
 </p>
+<br/>
 <p>Now, unlike the classical artificial neuron, which is really just a static linear mapping followed by a nonlinearity, the Laplace neuron comes with more moving components. It has memory, delay, and time dynamics, all packed into a single unit. Which means more parameters to tune. But that also means more expressive power, and potentially a much better fit to the systems we’re trying to model.</p>
 <p>Let’s revisit the equation of the Laplace Neuron:</p>
 <div class="katex-wrapper">
@@ -163,25 +164,25 @@ $$
 <p>
 <div class="katex-wrapper">
 $$
-Z_1(s) = N_1 \cdot (w_{U1}U(s) + b_1)
+Z_1(s) = N_1(s) \cdot (w_{U1}U(s) + b_1)
 $$</p>
 <p>$$
-Z_2(s) = N_2 \cdot (w_{U2}U(s) + b_2)
+Z_2(s) = N_2(s) \cdot (w_{U2}U(s) + b_2)
 $$</p>
 <p>$$
-Z_3(s) = N_3 \cdot (w_{U3}U(s) + b_3)
+Z_3(s) = N_3(s) \cdot (w_{U3}U(s) + b_3)
 $$</p>
 <p>$$
-Z_4(s) = N_4 \cdot (w_{14}Z_1(s) + w_{24}Z_2(s) + w_{34}Z_3(s) + b_4)
+Z_4(s) = N_4(s) \cdot (w_{14}Z_1(s) + w_{24}Z_2(s) + w_{34}Z_3(s) + b_4)
 $$</p>
 <p>$$
-Z_5(s) = N_5 \cdot (w_{15}Z_1(s) + w_{25}Z_2(s) + w_{35}Z_3(s) + b_5)
+Z_5(s) = N_5(s) \cdot (w_{15}Z_1(s) + w_{25}Z_2(s) + w_{35}Z_3(s) + b_5)
 $$</p>
 <p>$$
-Z_6(s) = N_6 \cdot (w_{16}Z_1(s) + w_{26}Z_2(s) + w_{36}Z_3(s) + b_6)
+Z_6(s) = N_6(s) \cdot (w_{16}Z_1(s) + w_{26}Z_2(s) + w_{36}Z_3(s) + b_6)
 $$</p>
 <p>$$
-Y(s) =  N_7 \cdot (w_{47}Z_4(s) + w_{57}Z_5(s) + w_{67}Z_6(s) + b_7)
+Y(s) =  N_7(s) \cdot (w_{47}Z_4(s) + w_{57}Z_5(s) + w_{67}Z_6(s) + b_7)
 $$
 </div>
 </p>
@@ -191,7 +192,7 @@ $$
 <p>\(Y(s)\) is the output of the network</p>
 </li>
 <li>
-<p>\(N_j\)  is the abstraction representing the \(j\)-th Laplace Neuron</p>
+<p>\(N_j(s)\)  is the function representing the \(j\)-th Laplace Neuron</p>
 </li>
 <li>
 <p>\(Z_j(s)\) is the output signal from the \(j\)-th neuron</p>
@@ -213,51 +214,51 @@ $$
 <div class="katex-wrapper">
 <!-- w67 -->
 <p>$$
-\frac{\partial error}{\partial w_{67}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{67}} = \frac{\partial error}{\partial Y(s)} \cdot N_7 \cdot Z_{6}(s)
+\frac{\partial error}{\partial w_{67}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{67}} = \frac{\partial error}{\partial Y(s)} \cdot N_7(s) \cdot Z_{6}(s)
 $$</p>
 <!-- w57 -->
 <p>$$
-\frac{\partial error}{\partial w_{57}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{57}} = \frac{\partial error}{\partial Y(s)} \cdot N_7 \cdot Z_{5}(s)
+\frac{\partial error}{\partial w_{57}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{57}} = \frac{\partial error}{\partial Y(s)} \cdot N_7(s) \cdot Z_{5}(s)
 $$</p>
 <!-- w47 -->
 <p>$$
-\frac{\partial error}{\partial w_{47}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{47}} = \frac{\partial error}{\partial Y(s)} \cdot N_7 \cdot Z_{4}(s)
+\frac{\partial error}{\partial w_{47}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial w_{47}} = \frac{\partial error}{\partial Y(s)} \cdot N_7(s) \cdot Z_{4}(s)
 $$</p>
 <!-- w36 -->
 <p>$$
-\frac{\partial error}{\partial w_{36}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{36}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7 \cdot N_6 \cdot Z_{3}(s)
+\frac{\partial error}{\partial w_{36}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{36}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7(s) \cdot N_6(s) \cdot Z_{3}(s)
 $$</p>
 <!-- w26 -->
 <p>$$
-\frac{\partial error}{\partial w_{26}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{26}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7 \cdot N_6 \cdot Z_{2}(s)
+\frac{\partial error}{\partial w_{26}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{26}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7(s) \cdot N_6(s) \cdot Z_{2}(s)
 $$</p>
 <!-- w16 -->
 <p>$$
-\frac{\partial error}{\partial w_{16}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{16}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7 \cdot N_6 \cdot Z_{1}(s)
+\frac{\partial error}{\partial w_{16}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial w_{16}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67}N_7(s) \cdot N_6(s) \cdot Z_{1}(s)
 $$</p>
 <!-- w35 -->
 <p>$$
-\frac{\partial error}{\partial w_{35}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{35}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7 \cdot N_5 \cdot Z_{3}(s)
+\frac{\partial error}{\partial w_{35}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{35}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7(s) \cdot N_5(s) \cdot Z_{3}(s)
 $$</p>
 <!-- w25 -->
 <p>$$
-\frac{\partial error}{\partial w_{25}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{25}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7 \cdot N_5 \cdot Z_{2}(s)
+\frac{\partial error}{\partial w_{25}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{25}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7(s) \cdot N_5(s) \cdot Z_{2}(s)
 $$</p>
 <!-- w15 -->
 <p>$$
-\frac{\partial error}{\partial w_{15}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{15}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7 \cdot N_5 \cdot Z_{1}(s)
+\frac{\partial error}{\partial w_{15}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial w_{15}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57}N_7(s) \cdot N_5(s) \cdot Z_{1}(s)
 $$</p>
 <!-- w34 -->
 <p>$$
-\frac{\partial error}{\partial w_{34}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{34}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{3}(s)
+\frac{\partial error}{\partial w_{34}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{34}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7(s) \cdot N_4(s) \cdot Z_{3}(s)
 $$</p>
 <!-- w24 -->
 <p>$$
-\frac{\partial error}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{2}(s)
+\frac{\partial error}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{24}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7(s) \cdot N_4(s) \cdot Z_{2}(s)
 $$</p>
 <!-- w14 -->
 <p>$$
-\frac{\partial error}{\partial w_{14}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{14}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7 \cdot N_4 \cdot Z_{1}(s)
+\frac{\partial error}{\partial w_{14}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial w_{14}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47}N_7(s) \cdot N_4(s) \cdot Z_{1}(s)
 $$</p>
 </div>
 <div class="katex-wrapper">
@@ -265,40 +266,40 @@ $$</p>
 <p>$$
 \begin{aligned}
 \frac{\partial error}{\partial w_{U3}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial w_{U3}}  + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial w_{U3}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial w_{U3}} \right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{36} N_6 \cdot N_3 \cdot U(s) + w_{57} N_7 \cdot w_{35} N_5 \cdot N_3 \cdot U(s) + w_{47} N_7 \cdot w_{34} N_4 \cdot N_3 \cdot U(s) \right]
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{36} N_6(s) \cdot N_3(s) \cdot U(s) + w_{57} N_7(s) \cdot w_{35} N_5(s) \cdot N_3(s) \cdot U(s) + w_{47} N_7(s) \cdot w_{34} N_4(s) \cdot N_3(s) \cdot U(s) \right]
 \end{aligned}
 $$</p>
 <!-- wU2 -->
 <p>$$
 \begin{aligned}
 \frac{\partial error}{\partial w_{U2}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial w_{U2}}  + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial w_{U2}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial w_{U2}} \right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{26} N_6 \cdot N_2 \cdot U(s) + w_{57} N_7 \cdot w_{25} N_5 \cdot N_2 \cdot U(s) + w_{47} N_7 \cdot w_{24} N_4 \cdot N_2 \cdot U(s) \right]
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{26} N_6(s) \cdot N_2(s) \cdot U(s) + w_{57} N_7(s) \cdot w_{25} N_5(s) \cdot N_2(s) \cdot U(s) + w_{47} N_7(s) \cdot w_{24} N_4(s) \cdot N_2(s) \cdot U(s) \right]
 \end{aligned}
 $$</p>
 <!-- wU1 -->
 <p>$$
 \begin{aligned}
 \frac{\partial error}{\partial w_{U1}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial w_{U1}}  + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial w_{U1}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial w_{U1}} \right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{16} N_6 \cdot N_1 \cdot U(s) + w_{57} N_7 \cdot w_{15} N_5 \cdot N_1 \cdot U(s) + w_{47} N_7 \cdot w_{14} N_4 \cdot N_1 \cdot U(s) \right]
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{16} N_6(s) \cdot N_1(s) \cdot U(s) + w_{57} N_7(s) \cdot w_{15} N_5(s) \cdot N_1(s) \cdot U(s) + w_{47} N_7(s) \cdot w_{14} N_4(s) \cdot N_1(s) \cdot U(s) \right]
 \end{aligned}
 $$</p>
 </div>
 <div class="katex-wrapper">
 <!-- b7 -->
 <p>$$
-\frac{\partial error}{\partial b_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial b_7} = \frac{\partial error}{\partial Y(s)} \cdot N_7
+\frac{\partial error}{\partial b_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial b_7} = \frac{\partial error}{\partial Y(s)} \cdot N_7(s)
 $$</p>
 <!-- b6 -->
 <p>$$
-\frac{\partial error}{\partial b_{6}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial b_{6}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7 \cdot N_6
+\frac{\partial error}{\partial b_{6}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial b_{6}} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7(s) \cdot N_6(s)
 $$</p>
 <!-- b5 -->
 <p>$$
-\frac{\partial error}{\partial b_{5}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial b_{5}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7 \cdot N_5
+\frac{\partial error}{\partial b_{5}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial b_{5}} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7(s) \cdot N_5(s)
 $$</p>
 <!-- b4 -->
 <p>$$
-\frac{\partial error}{\partial b_{4}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial b_{4}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7 \cdot N_4
+\frac{\partial error}{\partial b_{4}} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial b_{4}} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7(s) \cdot N_4(s)
 $$</p>
 </div>
 <div class="katex-wrapper">
@@ -306,21 +307,21 @@ $$</p>
 <p>$$
 \begin{aligned}
 \frac{\partial error}{\partial b_{3}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial b_{3}} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial b_{3}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial b_{3}}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7 \cdot w_{36}N_6 \cdot N_3 + w_{57}N_7 \cdot w_{35}N_5 \cdot N_3 + w_{47}N_7 \cdot w_{34}N_4 \cdot N_3 \right]
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7(s) \cdot w_{36}N_6(s) \cdot N_3(s) + w_{57}N_7(s) \cdot w_{35}N_5(s) \cdot N_3(s) + w_{47}N_7(s) \cdot w_{34}N_4(s) \cdot N_3(s) \right]
 \end{aligned}
 $$</p>
 <!-- b2 -->
 <p>$$
 \begin{aligned}
 \frac{\partial error}{\partial b_{2}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial b_{2}} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial b_{2}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial b_{2}}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7 \cdot w_{26}N_6 \cdot N_2 + w_{57}N_7 \cdot w_{25}N_5 \cdot N_2 + w_{47}N_7 \cdot w_{24}N_4 \cdot N_2 \right]
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7(s) \cdot w_{26}N_6(s) \cdot N_2(s) + w_{57}N_7(s) \cdot w_{25}N_5(s) \cdot N_2(s) + w_{47}N_7(s) \cdot w_{24}N_4(s) \cdot N_2(s) \right]
 \end{aligned}
 $$</p>
 <!-- b1 -->
 <p>$$
 \begin{aligned}
 \frac{\partial error}{\partial b_{1}} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial b_{1}} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial b_{1}} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial b_{1}}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7 \cdot w_{16}N_6 \cdot N_1 + w_{57}N_7 \cdot w_{15}N_5 \cdot N_1 + w_{47}N_7 \cdot w_{14}N_4 \cdot N_1 \right]
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67}N_7(s) \cdot w_{16}N_6(s) \cdot N_1(s) + w_{57}N_7(s) \cdot w_{15}N_5(s) \cdot N_1(s) + w_{47}N_7(s) \cdot w_{14}N_4(s) \cdot N_1(s) \right]
 \end{aligned}
 $$</p>
 </div>
@@ -331,102 +332,103 @@ $$</p>
 <div class="katex-wrapper">
 <!-- tau7 -->
 <p>$$
-\frac{\partial error}{\partial \tau_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial N_7} \cdot \frac{\partial N_7}{\partial \tau_7} = \frac{\partial error}{\partial Y(s)} \cdot (w_{47}Z_{4}(s) + w_{57}Z_{5}(s) + w_{67}Z_{6}(s)) \cdot \frac{\partial N_7}{\partial \tau_7}
+\frac{\partial error}{\partial \tau_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial N_7(s)} \cdot \frac{\partial N_7(s)}{\partial \tau_7} = \frac{\partial error}{\partial Y(s)} \cdot (w_{47}Z_{4}(s) + w_{57}Z_{5}(s) + w_{67}Z_{6}(s)) \cdot \frac{\partial N_7(s)}{\partial \tau_7}
 $$</p>
 <!-- theta7 -->
 <p>$$
-\frac{\partial error}{\partial \theta_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial N_7} \cdot \frac{\partial N_7}{\partial \theta_7} = \frac{\partial error}{\partial Y(s)} \cdot (w_{47}Z_{4}(s) + w_{57}Z_{5}(s) + w_{67}Z_{6}(s)) \cdot \frac{\partial N_7}{\partial \theta_7}
+\frac{\partial error}{\partial \theta_7} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial N_7(s)} \cdot \frac{\partial N_7(s)}{\partial \theta_7} = \frac{\partial error}{\partial Y(s)} \cdot (w_{47}Z_{4}(s) + w_{57}Z_{5}(s) + w_{67}Z_{6}(s)) \cdot \frac{\partial N_7(s)}{\partial \theta_7}
 $$</p>
 <!-- tau6 -->
 <p>$$
-\frac{\partial error}{\partial \tau_6} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial N_6} \cdot \frac{\partial N_6}{\partial \tau_6} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7 \cdot (w_{16}Z_{1}(s) + w_{26}Z_{2}(s) + w_{36}Z_{3}(s)) \cdot \frac{\partial N_6}{\partial \tau_6}
+\frac{\partial error}{\partial \tau_6} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial N_6(s)} \cdot \frac{\partial N_6(s)}{\partial \tau_6} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7(s) \cdot (w_{16}Z_{1}(s) + w_{26}Z_{2}(s) + w_{36}Z_{3}(s)) \cdot \frac{\partial N_6(s)}{\partial \tau_6}
 $$</p>
 <!-- theta6 -->
 <p>$$
-\frac{\partial error}{\partial \theta_6} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial N_6} \cdot \frac{\partial N_6}{\partial \theta_6} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7 \cdot (w_{16}Z_{1}(s) + w_{26}Z_{2}(s) + w_{36}Z_{3}(s)) \cdot \frac{\partial N_6}{\partial \theta_6}
+\frac{\partial error}{\partial \theta_6} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial N_6(s)} \cdot \frac{\partial N_6(s)}{\partial \theta_6} = \frac{\partial error}{\partial Y(s)} \cdot w_{67} N_7(s) \cdot (w_{16}Z_{1}(s) + w_{26}Z_{2}(s) + w_{36}Z_{3}(s)) \cdot \frac{\partial N_6(s)}{\partial \theta_6}
 $$</p>
 <!-- tau5 -->
 <p>$$
-\frac{\partial error}{\partial \tau_5} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial N_5} \cdot \frac{\partial N_5}{\partial \tau_5} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7 \cdot (w_{15}Z_{1}(s) + w_{25}Z_{2}(s) + w_{35}Z_{3}(s)) \cdot \frac{\partial N_5}{\partial \tau_5}
+\frac{\partial error}{\partial \tau_5} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial N_5(s)} \cdot \frac{\partial N_5(s)}{\partial \tau_5} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7(s) \cdot (w_{15}Z_{1}(s) + w_{25}Z_{2}(s) + w_{35}Z_{3}(s)) \cdot \frac{\partial N_5(s)}{\partial \tau_5}
 $$</p>
 <!-- theta5 -->
 <p>$$
-\frac{\partial error}{\partial \theta_5} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial N_5} \cdot \frac{\partial N_5}{\partial \theta_5} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7 \cdot (w_{15}Z_{1}(s) + w_{25}Z_{2}(s) + w_{35}Z_{3}(s)) \cdot \frac{\partial N_5}{\partial \theta_5}
+\frac{\partial error}{\partial \theta_5} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial N_5(s)} \cdot \frac{\partial N_5(s)}{\partial \theta_5} = \frac{\partial error}{\partial Y(s)} \cdot w_{57} N_7(s) \cdot (w_{15}Z_{1}(s) + w_{25}Z_{2}(s) + w_{35}Z_{3}(s)) \cdot \frac{\partial N_5(s)}{\partial \theta_5}
 $$</p>
 <!-- tau4 -->
 <p>$$
-\frac{\partial error}{\partial \tau_4} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial N_4} \cdot \frac{\partial N_4}{\partial \tau_4} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7 \cdot (w_{14}Z_{1}(s) + w_{24}Z_{2}(s) + w_{34}Z_{3}(s)) \cdot \frac{\partial N_4}{\partial \tau_4}
+\frac{\partial error}{\partial \tau_4} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial N_4(s)} \cdot \frac{\partial N_4(s)}{\partial \tau_4} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7(s) \cdot (w_{14}Z_{1}(s) + w_{24}Z_{2}(s) + w_{34}Z_{3}(s)) \cdot \frac{\partial N_4(s)}{\partial \tau_4}
 $$</p>
 <!-- theta4 -->
 <p>$$
-\frac{\partial error}{\partial \theta_4} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial N_4} \cdot \frac{\partial N_4}{\partial \theta_4} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7 \cdot (w_{14}Z_{1}(s) + w_{24}Z_{2}(s) + w_{34}Z_{3}(s)) \cdot \frac{\partial N_4}{\partial \theta_4}
+\frac{\partial error}{\partial \theta_4} = \frac{\partial error}{\partial Y(s)} \cdot \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial N_4(s)} \cdot \frac{\partial N_4(s)}{\partial \theta_4} = \frac{\partial error}{\partial Y(s)} \cdot w_{47} N_7(s) \cdot (w_{14}Z_{1}(s) + w_{24}Z_{2}(s) + w_{34}Z_{3}(s)) \cdot \frac{\partial N_4(s)}{\partial \theta_4}
 $$</p>
 </div>
 <div class="katex-wrapper">
 <!-- tau3 -->
 <p>$$
 \begin{aligned}
-\frac{\partial error}{\partial \tau_3} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \tau_3} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \tau_3} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \tau_3}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{36} N_6 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \tau_3} + w_{57} N_7 \cdot w_{35} N_5 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \tau_3} + w_{47} N_7 \cdot w_{34} N_4 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \tau_3}\right]
+\frac{\partial error}{\partial \tau_3} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3(s)} \cdot \frac{\partial N_3(s)}{\partial \tau_3} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3(s)} \cdot \frac{\partial N_3(s)}{\partial \tau_3} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3(s)} \cdot \frac{\partial N_3(s)}{\partial \tau_3}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{36} N_6(s) \cdot w_{U3} U(s) \cdot \frac{\partial N_3(s)}{\partial \tau_3} + w_{57} N_7(s) \cdot w_{35} N_5(s) \cdot w_{U3} U(s) \cdot \frac{\partial N_3(s)}{\partial \tau_3} + w_{47} N_7(s) \cdot w_{34} N_4(s) \cdot w_{U3} U(s) \cdot \frac{\partial N_3(s)}{\partial \tau_3}\right]
 \end{aligned}
 $$</p>
 <!-- theta3 -->
 <p>$$
 \begin{aligned}
-\frac{\partial error}{\partial \theta_3} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \theta_3} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \theta_3} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3} \cdot \frac{\partial N_3}{\partial \theta_3}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{36} N_6 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \theta_3} + w_{57} N_7 \cdot w_{35} N_5 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \theta_3} + w_{47} N_7 \cdot w_{34} N_4 \cdot w_{U3} U(s) \cdot \frac{\partial N_3}{\partial \theta_3}\right]
+\frac{\partial error}{\partial \theta_3} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3(s)} \cdot \frac{\partial N_3(s)}{\partial \theta_3} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3(s)} \cdot \frac{\partial N_3(s)}{\partial \theta_3} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{3}(s)} \cdot \frac{\partial Z_{3}(s)}{\partial N_3(s)} \cdot \frac{\partial N_3(s)}{\partial \theta_3}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{36} N_6(s) \cdot w_{U3} U(s) \cdot \frac{\partial N_3(s)}{\partial \theta_3} + w_{57} N_7(s) \cdot w_{35} N_5(s) \cdot w_{U3} U(s) \cdot \frac{\partial N_3(s)}{\partial \theta_3} + w_{47} N_7(s) \cdot w_{34} N_4(s) \cdot w_{U3} U(s) \cdot \frac{\partial N_3(s)}{\partial \theta_3}\right]
 \end{aligned}
 $$</p>
 <!-- tau2 -->
 <p>$$
 \begin{aligned}
-\frac{\partial error}{\partial \tau_2} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \tau_2} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \tau_2} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \tau_2}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{26} N_6 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \tau_2} + w_{57} N_7 \cdot w_{25} N_5 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \tau_2} + w_{47} N_7 \cdot w_{24} N_4 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \tau_2}\right]
+\frac{\partial error}{\partial \tau_2} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2(s)} \cdot \frac{\partial N_2(s)}{\partial \tau_2} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2(s)} \cdot \frac{\partial N_2(s)}{\partial \tau_2} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2(s)} \cdot \frac{\partial N_2(s)}{\partial \tau_2}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{26} N_6(s) \cdot w_{U2} U(s) \cdot \frac{\partial N_2(s)}{\partial \tau_2} + w_{57} N_7(s) \cdot w_{25} N_5(s) \cdot w_{U2} U(s) \cdot \frac{\partial N_2(s)}{\partial \tau_2} + w_{47} N_7(s) \cdot w_{24} N_4(s) \cdot w_{U2} U(s) \cdot \frac{\partial N_2(s)}{\partial \tau_2}\right]
 \end{aligned}
 $$</p>
 <!-- theta2 -->
 <p>$$
 \begin{aligned}
-\frac{\partial error}{\partial \theta_2} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \theta_2} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \theta_2} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2} \cdot \frac{\partial N_2}{\partial \theta_2}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{26} N_6 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \theta_2} + w_{57} N_7 \cdot w_{25} N_5 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \theta_2} + w_{47} N_7 \cdot w_{24} N_4 \cdot w_{U2} U(s) \cdot \frac{\partial N_2}{\partial \theta_2}\right]
+\frac{\partial error}{\partial \theta_2} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2(s)} \cdot \frac{\partial N_2(s)}{\partial \theta_2} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2(s)} \cdot \frac{\partial N_2(s)}{\partial \theta_2} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{2}(s)} \cdot \frac{\partial Z_{2}(s)}{\partial N_2(s)} \cdot \frac{\partial N_2(s)}{\partial \theta_2}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{26} N_6(s) \cdot w_{U2} U(s) \cdot \frac{\partial N_2(s)}{\partial \theta_2} + w_{57} N_7(s) \cdot w_{25} N_5(s) \cdot w_{U2} U(s) \cdot \frac{\partial N_2(s)}{\partial \theta_2} + w_{47} N_7(s) \cdot w_{24} N_4(s) \cdot w_{U2} U(s) \cdot \frac{\partial N_2(s)}{\partial \theta_2}\right]
 \end{aligned}
 $$</p>
 <!-- tau1 -->
 <p>$$
 \begin{aligned}
-\frac{\partial error}{\partial \tau_1} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \tau_1} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \tau_1} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \tau_1}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{16} N_6 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \tau_1} + w_{57} N_7 \cdot w_{15} N_5 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \tau_1} + w_{47} N_7 \cdot w_{14} N_4 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \tau_1}\right]
+\frac{\partial error}{\partial \tau_1} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1(s)} \cdot \frac{\partial N_1(s)}{\partial \tau_1} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1(s)} \cdot \frac{\partial N_1(s)}{\partial \tau_1} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1(s)} \cdot \frac{\partial N_1(s)}{\partial \tau_1}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{16} N_6(s) \cdot w_{U1} U(s) \cdot \frac{\partial N_1(s)}{\partial \tau_1} + w_{57} N_7(s) \cdot w_{15} N_5(s) \cdot w_{U1} U(s) \cdot \frac{\partial N_1(s)}{\partial \tau_1} + w_{47} N_7(s) \cdot w_{14} N_4(s) \cdot w_{U1} U(s) \cdot \frac{\partial N_1(s)}{\partial \tau_1}\right]
 \end{aligned}
 $$</p>
 <!-- theta1 -->
 <p>$$
 \begin{aligned}
-\frac{\partial error}{\partial \theta_1} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \theta_1} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \theta_1} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1} \cdot \frac{\partial N_1}{\partial \theta_1}\right] \\
-&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7 \cdot w_{16} N_6 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \theta_1} + w_{57} N_7 \cdot w_{15} N_5 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \theta_1} + w_{47} N_7 \cdot w_{14} N_4 \cdot w_{U1} U(s) \cdot \frac{\partial N_1}{\partial \theta_1}\right]
+\frac{\partial error}{\partial \theta_1} &amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ \frac{\partial Y(s)}{\partial Z_{6}(s)} \cdot \frac{\partial Z_{6}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1(s)} \cdot \frac{\partial N_1(s)}{\partial \theta_1} + \frac{\partial Y(s)}{\partial Z_{5}(s)} \cdot \frac{\partial Z_{5}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1(s)} \cdot \frac{\partial N_1(s)}{\partial \theta_1} + \frac{\partial Y(s)}{\partial Z_{4}(s)} \cdot \frac{\partial Z_{4}(s)}{\partial Z_{1}(s)} \cdot \frac{\partial Z_{1}(s)}{\partial N_1(s)} \cdot \frac{\partial N_1(s)}{\partial \theta_1}\right] \\
+&amp;= \frac{\partial error}{\partial Y(s)} \cdot \left[ w_{67} N_7(s) \cdot w_{16} N_6(s) \cdot w_{U1} U(s) \cdot \frac{\partial N_1(s)}{\partial \theta_1} + w_{57} N_7(s) \cdot w_{15} N_5(s) \cdot w_{U1} U(s) \cdot \frac{\partial N_1(s)}{\partial \theta_1} + w_{47} N_7(s) \cdot w_{14} N_4(s) \cdot w_{U1} U(s) \cdot \frac{\partial N_1(s)}{\partial \theta_1}\right]
 \end{aligned}
 $$</p>
 </div>
-
+<br/>
 <p>This might look a bit intimidating at first glance, but it’s not as bad as it seems. A lot of structure hides in these equations. There are patterns, and once you spot them, the whole thing starts to simplify.
 That said, a careful reader might notice that we’re not quite done yet.
 To properly update our parameters, we still need to say what \(\frac{\partial N}{\partial \tau}\) and \(\frac{\partial N}{\partial \theta}\) actually mean. So let’s do that.</p>
-<p>Remember, \(N\) is just an abstraction. It represents the behavior of a Laplace neuron receiving weighted inputs and firing after threshold is reached.</p>
-<p>Now, to adjust the internal parameters \(\tau\) and \(\theta\), we need to partially differentiate this abstraction. In other words, we have to unpack what \(N\) is doing with respect to each of these values, so we can know exactly how a change in one affects the overall output.</p>
+<p>Remember, \(N(s)\) is a function that represents the behavior of a Laplace neuron receiving weighted inputs and firing after threshold is reached.</p>
+<p>Now, to adjust the internal parameters \(\tau\) and \(\theta\), we need to partially differentiate this function. In other words, we have to unpack what \(N\) is doing with respect to each of these values, so we can know exactly how a change in one affects the overall output.</p>
 <p>Let’s write it out:</p>
 <div class="katex-wrapper">
 <p>$$
-\frac{\partial N}{\partial \tau} = \frac{\partial \left( \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{1}{\tau s + 1}\right)}{\partial \tau} = \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{-s}{(\tau s + 1)^2}
+\frac{\partial N(s)}{\partial \tau} = \frac{\partial \left( \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \frac{1}{\tau s + 1}\right)}{\partial \tau} = \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \frac{-s}{(\tau s + 1)^2}
 $$</p>
 <p>$$
-\frac{\partial N}{\partial \theta} 
-= \frac{\partial \left( \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{1}{\tau s + 1} \right)}{\partial \theta} 
-= \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{-s}{\tau s + 1}
+\frac{\partial N(s)}{\partial \theta} 
+= \frac{\partial \left( \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \frac{1}{\tau s + 1} \right)}{\partial \theta} 
+= \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \frac{-s}{\tau s + 1}
 $$</p>
 </div>
+<br/>
 <p>We can also write out the partial derivative of the \(\delta\)ReLU, just to get some intuition about what happens to the derivative when the threshold is reached:</p>
 <div class="katex-wrapper">
 <p>$$
-\frac{\partial N}{\partial \delta \mathrm{ReLU}} = \frac{\partial \left( \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \frac{1}{\tau s + 1}\right)}{\partial \delta \mathrm{ReLU}} = \begin{cases}
+\frac{\partial N(s)}{\partial \delta \mathrm{ReLU}} = \frac{\partial \left( \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \frac{1}{\tau s + 1}\right)}{\partial \delta \mathrm{ReLU}} = \begin{cases}
         (\sum_{\atop{j=1}}^{n} {w_j}{ U_j(s))  \cdot e^{-\theta s}\frac{1}{\tau s+1}}) &amp; \text{if } x&gt;\delta \\ 
         0 &amp; \text{otherwise}
     \end{cases}
@@ -471,6 +473,7 @@ $$</p>
         <img id="step" class="poles-class responsive"  alt="Alt" src="../assets/img/poles.png" title="Stability" />
     </div>
 </p>
+<br/>
 <p>So what does this mean for our training process?
 Well, to keep its dynamics stable, we need to make sure that the pole stays on the left side. In our case, that simply means keeping \(\tau &gt; 0\) If \(\tau\) becomes zero or negative during training, the pole jumps into the unstable zone, and things start exploding numerically.</p>
 <p>To prevent that, we can apply a simple constraint during training: clip the gradient so that \(\tau\) never drops below a small positive value. Something like \(\tau > \epsilon\), where \(\epsilon\) is an infinitesimally small number, just enough to keep things on the safe side of the plane.</p>
