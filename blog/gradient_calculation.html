@@ -410,7 +410,7 @@ $$</p>
 <br/>
 <p>This might look a bit intimidating at first glance, but it’s not as bad as it seems. A lot of structure hides in these equations. There are patterns, and once you spot them, the whole thing starts to simplify.
 That said, a careful reader might notice that we’re not quite done yet.
-To properly update our parameters, we still need to say what \(\frac{\partial N}{\partial \tau}\) and \(\frac{\partial N}{\partial \theta}\) actually mean. So let’s do that.</p>
+To properly update our parameters, we still need to say what \(\frac{\partial N(s)}{\partial \tau}\) and \(\frac{\partial N(s)}{\partial \theta}\) actually mean. So let’s do that.</p>
 <p>Remember, \(N(s)\) is a function that represents the behavior of a Laplace neuron receiving weighted inputs and firing after threshold is reached.</p>
 <p>Now, to adjust the internal parameters \(\tau\) and \(\theta\), we need to partially differentiate this function. In other words, we have to unpack what \(N\) is doing with respect to each of these values, so we can know exactly how a change in one affects the overall output.</p>
 <p>Let’s write it out:</p>
