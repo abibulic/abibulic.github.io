@@ -151,7 +151,7 @@ updateThemeIcon(isDark);
 <p>Let’s revisit the equation of the Laplace Neuron:</p>
 <div class="katex-wrapper">
 <p>$$
-  Y(s) = \mathcal{L} \left[ \delta\mathrm{ReLU} \left( \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right) \right] \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1}
+  Y(s) = \mathcal{L} \left\{ \delta\mathrm{ReLU} \left[ \mathcal{L}^{-1} \left( \sum_{j=1}^{n} w_j \, U_j(s) \right) \right] \right\} \cdot e^{-\theta s} \cdot \frac{K}{\tau s + 1}
 $$
 </p>
 </div>
