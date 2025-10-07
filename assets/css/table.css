@@ -1,0 +1,15 @@
+.centered-bordered {
+  margin: 1rem auto;
+  border-collapse: collapse;
+  width: max-content;
+}
+
+.centered-bordered th, .centered-bordered td {
+  border: 1px solid rgba(115,137,150);
+  padding: 8px 12px;
+}
+
+.centered-bordered thead th {
+  background: var(--bs-secondary-bg);
+}
+

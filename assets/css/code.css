@@ -1,0 +1,12 @@
+.code-alt {
+  background: var(--bs-secondary-bg);
+  color: var(--bs-code-color);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.code-alt code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
