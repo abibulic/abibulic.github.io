@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body);"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>From Equations to Code: Training a Laplace Neural Network</title>
+    <meta name="description" content="This post turns the Laplace-domain theory into a clean, runnable Python Laplace Neural Network. We wire LTI “neurons” into a DAG, learn a mass–spring–damper from data, derive gradients via transfer-function algebra (no BPTT), and then pit the model against an RNN while probing ×10 input extrapolation, showing why TF-based learning stays stable, scalable, and interpretable.">
+    <meta property="og:image" content="https://abibulic.github.io/assets/img/implementation.jpg">
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Share+Tech+Mono&amp;display=swap">
+    <link rel="stylesheet" href="../assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="../assets/css/code.css">
+    <link rel="stylesheet" href="../assets/css/equations.css">
+    <link rel="stylesheet" href="../assets/css/scrolltop.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/table.css">
+    <link rel="stylesheet" href="../assets/css/theme_switch.css">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6Q2YQ6FRRM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6Q2YQ6FRRM');
+</script>
+</head>
+
+<body style="font-family: 'Share Tech Mono', monospace;">
+    <div class="limited-width">
+        <div class="notebook-grid">
+            <div id="navbar-div" class="fancy-border">
+                <nav class="navbar navbar-expand-md text-uppercase text-end">
+                    <div class="container-fluid"><a class="navbar-brand" href="#"></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1" style="border-color: var(--bs-success);"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                        <div class="collapse navbar-collapse" id="navcol-1">
+                            <ul class="navbar-nav mx-auto underline-links">
+                                <li class="nav-item"><a class="nav-link" href="/">About</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../blog.html">Blog</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../cv.html">CV</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../contact.html">Contact</a></li>
+                            </ul><div class="theme-switcher">
+  <label class="switch">
+    <input type="checkbox" id="themeToggle">
+    <span class="slider">
+      <span class="icon" id="themeIcon"></span>
+    </span>
+  </label>
+</div>
+
+<style>
+.theme-switcher {
+  display: inline-block;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #f1efee;
+  transition: background-color 0.3s;
+  border-radius: 34px;
+  border: 1px solid var(--bs-success); /* or any color you like */
+}
+
+.icon {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease-in-out;
+  color: #fff;
+}
+    
+@media (min-width: 768px) {
+  .icon {
+    top: 0px;       /* move icon down */
+  }
+}
+
+.switch input:checked + .slider {
+  background-color: #102131;
+}
+
+.switch input:checked + .slider .icon {
+  transform: translateX(24px);
+}
+</style>
+
+<script>
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+
+const sunSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill=#5e7c8e viewBox="0 0 16 16">
+    <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0Zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5ZM16 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5ZM3 8a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H2.5A.5.5 0 0 1 3 8Zm11.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0ZM4.464 11.536a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0ZM13.657 13.657a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707ZM4.464 4.464a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707Z"/>
+  </svg>`;
+
+const moonSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill=var(--bs-primary) viewBox="0 0 16 16">
+    <path d="M6 .278a.768.768 0 0 1 .08.858 7.2 7.2 0 0 0-.88 3.46c0 4.02 3.28 7.28 7.32 7.28.53 0 1.04-.06 1.53-.16a.78.78 0 0 1 .81.32.73.73 0 0 1-.03.89A8.35 8.35 0 0 1 8.34 16C3.73 16 0 12.29 0 7.71 0 4.27 2.11 1.31 5.12.06A.75.75 0 0 1 6 .278Z"/>
+  </svg>`;
+
+function updateThemeIcon(isDark) {
+  themeIcon.innerHTML = isDark ? moonSVG : sunSVG;
+  document.body.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+themeToggle.addEventListener('change', () => {
+  updateThemeIcon(themeToggle.checked);
+});
+
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+
+themeToggle.checked = isDark;
+updateThemeIcon(isDark);
+</script>
+
+
+                        </div>
+                    </div>
+                </nav>
+                <div class="border-left"></div>
+                <div class="border-right"></div>
+            </div>
+            <div class="fancy-border">
+                <div class="border-left"></div>
+                <div class="border-right"></div><h1>From Equations to Code: Training a Laplace Neural Network</h1>
+<hr />
+<p>In the first post we introduced a <strong>Laplace neuron</strong> (an LTI block + optional static nonlinearity) as a dynamical building block. In the second post we showed how to compute gradients through a small <strong>Laplace Neural Network</strong>, not through time, but through the network graph, yielding closed-form gradients in the Laplace domain.</p>
+<p>Today we'll put the theory to work, make a clean, runnable Python implementation that learns a simple physical system from data and even generalize to inputs it never saw.</p>
+<p>We are going to:</p>
+<ul>
+  <li>build an actual <strong>Laplace Neural Network</strong> as a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph" target="_blank" rel="noopener noreferrer">directed acyclic graph</a> (DAG) of <strong>Laplace neurons</strong>,</li>
+  <li>train it end-to-end on a simple physical system,</li>
+  <li>compare it to <strong>RNN baseline</strong> ,</li>
+  <li>test its extrapolation capabilities on input signals outside of training distribution.</li>
+</ul>
+<br />
+<h2>The setup: identify a mass–spring–damper</h2>
+<hr />
+<p>If the world is a hierarchy of dynamical systems, the mass–spring–damper is the “hello, world” of that hierarchy. Three parameters, one second order differential equation, and an entire spectrum of behaviors, settling, overshoot, emerging from a tiny polynomial in <span class="math">\(s\)</span> domain.</p>
+<p>We’ll work with a standard second order plant:</p>
+<div class="math">$$
+\text{Plant}(s)=\frac{1}{m s^2 + c s + k},\qquad
+(m,c,k)=(20,3,2),
+$$</div>
+<p>and drive it with a piecewise constant input <span class="math">\(u(t)\)</span>. The system response is the position <span class="math">\(y(t)\)</span>. Our goal is <strong>system identification</strong> or to learn a network <span class="math">\(f_0\)</span> such that  <span class="math">\(f_0[u(t)] \approx y(t)\)</span>, where <span class="math">\(y\)</span> is the plant's position response.</p>
+
+<pre class="code-alt"><code class="language-python"># System parameters
+m, c, k = 20, 3, 2
+t = np.linspace(0, 100, 1000)
+
+# Arbitrary piecewise constant input
+u = np.zeros_like(t)
+u[10:] = 5
+u[40:] = 1
+u[100:] = 25
+u[152:] = 5
+u[220:] = 13
+u[300:] = 0
+u[400:] = 5
+
+# System response
+plant = signal.TransferFunction([1], [m, c, k])
+_, position, _ = signal.lsim(plant, U=u, T=t)
+</code></pre>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="msd" class="msd-class responsive"  alt="Alt" src="../assets/img/msd.png" title="Mass-spring-dumper" />
+    </div>
+</p>
+<br/>
+<h2>The model: Laplace Neural Network</h2>
+<hr />
+<p>Each node of the network <span class="math">\(j\)</span> is a <strong>Laplace neuron</strong> that has:</p>
+<ul>
+  <li>an input <span class="math">\(u_j(t)\)</span> formed by <strong>weighted sum</strong> of parent outputs,</li>
+  <li>a linear time-invariant block <span class="math">\(H_j\)</span> (its transfer function),</li>
+  <li>optionally a static nonlinearity <span class="math">\(\phi\)</span> before the LTI block.</li>
+</ul>
+<div class="math">$$
+x_j = H_j[\ \phi(u_j)\ ],\qquad
+u_j(t) = \sum_{(i\to j)} w_{ij}\,x_i(t)
+$$</div>
+<p>For this experiment we set <span class="math">\(\phi\)</span> to the identity, so each node reduces to pure LTI block. Swapping in a nonlinearity (e.g. <span class="math">\(\delta\)</span>ReLU from the first post) is plug-and-play, the only change in the gradients is a local <span class="math">\(\phi'\)</span> factor to the sensitivities (see next section).</p>
+<p>Each <code>Node</code> carries a transfer function <span class="math">\(H_j(s)\)</span> and the transfer functions of its parameter derivatives <span class="math">\(\partial H_j / \partial \theta\)</span>. The network is a <strong>feed-forward DAG</strong> (the same 1–3–3–1 layout we used before): three neurons read the external input, three combine them, and one produces the output.</p>
+
+<pre class="code-alt"><code class="language-python">@dataclass
+class Node:
+    name: str
+    params: Dict[str, float] = field(default_factory=dict)
+    build_tf: Callable[[Dict[str, float]], signal.TransferFunction] = lambda p: tf_one()
+    build_param_derivs: Callable[[Dict[str, float]], Dict[str, signal.TransferFunction]] = lambda p: {}
+    tf: signal.TransferFunction = field(init=False)               # H_j
+    d_tf: Dict[str, signal.TransferFunction] = field(init=False)  # {∂H_j/∂θ}
+
+    def __post_init__(self):
+        self.rebuild()
+
+    def rebuild(self):
+        self.tf = self.build_tf(self.params)             # H_j
+        self.d_tf = self.build_param_derivs(self.params) # {∂H_j/∂θ}
+</code></pre>
+
+<h3>Concrete builders functions</h3>
+<p>For concreteness I instantiate a lightweight first-order family,</p>
+<div class="math">$$
+H_j(s) = \frac{k_j}{\tau_j s + \zeta_j},
+$$</div>
+<p>and supply analytical transfer function derivatives <span class="math">\(\partial H / \partial k,\ \partial H / \partial \tau,\ \partial H / \partial \zeta\)</span>.</p>
+
+<pre class="code-alt"><code class="language-python">def first_order_tf_builder(p):
+    return signal.TransferFunction([p["k"]], [p["tau"], p["zeta"]])
+
+def first_order_tf_derivs(p):
+    k, tau, zeta = p["k"], p["tau"], p["zeta"]
+    dH_dk    = signal.TransferFunction([1.0],           [tau, zeta])                    # ∂H/∂k
+    dH_dtau  = signal.TransferFunction([-k, 0.0],       [tau**2, 2*tau*zeta, zeta**2])  # ∂H/∂τ
+    dH_dzeta = signal.TransferFunction([-k],            [tau**2, 2*tau*zeta, zeta**2])  # ∂H/∂ζ
+    return {"k": dH_dk, "tau": dH_dtau, "zeta": dH_dzeta}
+</code></pre>
+
+<h3>Transfer function algebra helpers</h3>
+<p>We'll manipulate TFs symbolically and then simulate their responses with <code>scipy.signal.lsim</code>. These helpers mirror block diagram operations.</p>
+
+<pre class="code-alt"><code class="language-python">def tf_series(a, b):     # Series: b ∘ a
+    num = np.polymul(a.num, b.num)    # Multiply numerators
+    den = np.polymul(a.den, b.den)    # Multiply denominators
+    return signal.TransferFunction(num, den)
+
+def tf_add(a, b):        # Parallel sum: a + b
+    num = np.polyadd(np.polymul(a.num, b.den), np.polymul(b.num, a.den))
+    den = np.polymul(a.den, b.den)
+    return signal.TransferFunction(num, den)
+
+def tf_gain(g):          # Scalar gain as TF
+    return signal.TransferFunction([g], [1.0])
+
+def tf_zero(): return signal.TransferFunction([0.0], [1.0])
+def tf_one():  return signal.TransferFunction([1.0], [1.0])
+</code></pre>
+<ul>
+  <li><strong><code>tf_series</code></strong> composes two blocks as a serial connection.</li>
+  <li><strong><code>tf_add</code></strong> adds two branches in parallel.</li>
+  <li><strong><code>tf_gain</code></strong> is a static edge weight as a TF.</li>
+  <li><strong><code>tf_zero/one</code></strong> are identities for sums/series.</li>
+</ul>
+<br />
+<h2>The network as Directed Acyclic Graph</h2>
+<hr />
+<p>We wire nodes as a directed, weighted graph and insist on topological order so signal flow is left to right exactly once. No hidden loops, no implicit recurrences, just a clean acyclic pass where each node <span class="math">\(j\)</span> collects its weighted parents outputs, applies its dynamical response and hands the result downstream.</p>
+
+<pre class="code-alt"><code class="language-python">@dataclass
+class Edge:
+    src: Union[int, str]   # node id or "src:*"
+    dst: int
+    w: float               # trainable edge weight
+</code></pre>
+
+<pre class="code-alt"><code class="language-python">@dataclass
+class LTINetwork:
+    nodes: List[Node]
+    edges: List[Edge]
+    output_node: int
+    sources: Dict[str, np.ndarray]  # time-series inputs (e.g., {"src:u": u})
+    t: np.ndarray
+
+    # caches from the last forward pass
+    u: Dict[int, np.ndarray] = field(init=False, default_factory=dict)  # inputs to nodes
+    x: Dict[int, np.ndarray] = field(init=False, default_factory=dict)  # outputs of nodes
+    topo: List[int]          = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self._check_dag_and_build_topo()
+</code></pre>
+
+<p><strong>Topological order</strong> via <a href="https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm" target="_blank" rel="noopener noreferrer">Kahn’s algorithm</a> ensures parents come before children.</p>
+<br />
+<h2>Forward pass: simulate, don’t unroll</h2>
+<hr />
+<p>Instead of unrolling a recurrent state, we <strong>simulate</strong> each neuron’s transfer function once per batch with <code>scipy.signal.lsim</code>:</p>
+
+<pre class="code-alt"><code class="language-python">def forward(self) -> np.ndarray:
+    self.u = {j: np.zeros_like(self.t) for j in range(len(self.nodes))}
+    self.x = {}
+    parents_by_dst = defaultdict(list)
+    for e in self.edges:
+        parents_by_dst[e.dst].append((e.src, e.w))
+
+    for j in self.topo:
+        acc = np.zeros_like(self.t)
+        for src, w in parents_by_dst.get(j, []):
+            acc += w * (self.x[src] if isinstance(src, int) else self.sources[src])
+        self.u[j] = acc
+        _, yj, _ = signal.lsim(self.nodes[j].tf, U=self.u[j], T=self.t)  # uses H_j
+        self.x[j] = yj
+
+    return self.x[self.output_node]
+</code></pre>
+<p>Because the graph is acyclic, a topological order gives a single left-to-right sweep. No backpropagation through time, no truncation windows.</p>
+<br />
+<h2>Downstream TFs</h2>
+<hr />
+<p>For gradients we want to know how a change at <span class="math">\(x_j\)</span> flows to the output. Define <span class="math">\(G_j\)</span> as the <strong>transfer function from <span class="math">\(x_j\)</span> to <span class="math">\(y\)</span></strong>. In a DAG it’s a simple dynamic-programming sweep from right to left:</p>
+<ul>
+  <li>Base case: <span class="math">\(G_{\text{out}} = 1\)</span>.</li>
+  <li>For every child <span class="math">\(k\)</span> of <span class="math">\(j\)</span> with weight <span class="math">\(w_{jk}\)</span>:
+    <div class="math">\[
+  G_j \;=\; \sum_{k} \Big( w_{jk}\; H_k \circ G_k \Big),
+  \]
+  </div>
+  where “<span class="math">\(\circ\)</span>” is series composition.</li>
+</ul>
+
+<pre class="code-alt"><code class="language-python">def downstream_tfs(self) -> List[signal.TransferFunction]:
+    children_by_src = defaultdict(list)
+    for e in self.edges:
+        if isinstance(e.src, int):
+            children_by_src[e.src].append((e.dst, e.w))
+
+    G = [tf_zero() for _ in self.nodes]
+    G[self.output_node] = tf_one()   # x_out → y is identity
+
+    for j in reversed(self.topo):
+        s = tf_zero()
+        for (k, wjk) in children_by_src.get(j, []):
+            term = tf_series(self.nodes[k].tf, G[k])  # H_k ∘ G_k
+            term = tf_series(tf_gain(wjk), term)      # edge gain
+            s = term if (s.num.size == 1 and s.num[0] == 0) else tf_add(s, term)
+        if j != self.output_node:
+            G[j] = s
+    return G
+</code></pre>
+
+<p>Intuition: cut the graph just after <span class="math">\(x_j\)</span>, treat <span class="math">\(x_j\)</span> as an “input,” and collapse everything downstream into one TF.</p>
+<br />
+<h2>From sensitivities to gradients</h2>
+<hr />
+<p>We compute <strong>sensitivity signals</strong> (time-series derivatives of the output) and then reduce them to scalar <strong>gradients</strong> of the loss.</p>
+<p>Let <span class="math">\(e(t)=y(t)-\text{target}(t)\)</span> and <span class="math">\(\ell=\frac12 e^2\)</span>. Then <span class="math">\(\partial \ell / \partial y = e\)</span>.</p>
+<ul>
+  <li><strong>Edge weight <span class="math">\(w_{ij}\)</span>:</strong>
+    <div class="math">$$
+  \frac{\partial y}{\partial w_{ij}}(t)
+  = \Big(H_j \circ G_j\Big) * x_i(t).
+  $$</div>
+    <p>In code: simulate the TF <span class="math">\(H_j \circ G_j\)</span> with input <span class="math">\(x_i\)</span>, multiply pointwise by <span class="math">\(e(t)\)</span>, average.</p>
+  </li>
+  <li><strong>Node parameter <span class="math">\(\theta\in\{k,\tau,\zeta\}\)</span> at node <span class="math">\(j\)</span>:</strong>
+    <div class="math">$$
+  \frac{\partial y}{\partial \theta}(t) = \Big(\frac{\partial H_j}{\partial \theta} \circ G_j\Big) * u_j(t).
+  $$</div>
+  </li>
+</ul>
+
+<pre class="code-alt"><code class="language-python">def train_step(self, target, lr_w=1e-4, lr_p=1e-3, loss_reducer=lambda z: float(np.mean(z))):
+    y = self.forward()
+    err = y - target
+    G  = self.downstream_tfs()
+
+    # --- edge weights ---
+    for e in self.edges:
+        j = e.dst
+        HjGj = tf_series(self.nodes[j].tf, G[j])
+        src_sig = self.x[e.src] if isinstance(e.src, int) else self.sources[e.src]
+        _, sens, _ = signal.lsim(HjGj, U=src_sig, T=self.t)      # sens ≈ ∂y/∂w_ij
+        grad_w = loss_reducer(sens * err)                        # ⟨sens, ∂ℓ/∂y⟩
+        e.w -= lr_w * grad_w
+
+    # --- node parameters ---
+    for j, node in enumerate(self.nodes):
+        for pname, dHj in (node.d_tf or {}).items():
+            dHjGj = tf_series(dHj, G[j])
+            _, sens, _ = signal.lsim(dHjGj, U=self.u[j], T=self.t)  # ∂y/∂θ
+            grad_p = loss_reducer(sens * err)
+            proposal = node.params[pname] - lr_p * grad_p
+            if pname in ("tau", "zeta", "gamma"):   # keep TF stable/causal
+                proposal = max(1e-6, proposal)
+            node.params[pname] = proposal
+
+    # refresh TFs after parameter updates
+    for node in self.nodes:
+        node.rebuild()
+
+    return {"loss": float(np.mean(0.5 * err**2)), "y": y, "err": err}
+</code></pre>
+<p>A small but important detail: when updating <span class="math">\(\tau,\zeta\)</span> we clamp them to be positive to keep the TFs stable.</p>
+
+<br/>
+<h3>Why call them “sensitivities”?</h3>
+<p><span class="math">\(\partial y/\partial theta\)</span> is a <strong>time-varying derivative</strong> (a signal). The <strong>gradient of the scalar loss</strong> is the inner product of that sensitivity with <span class="math">\(\partial \ell/\partial y\)</span> (here, just <span class="math">\(e\)</span>). The code mirrors this exactly: simulate sensitivity → multiply by error → reduce.</p>
+<br />
+<h2>Training and results</h2>
+<hr />
+<p>We train with vanilla SGD on both <strong>edge weights</strong> and <strong>neuron parameters</strong>:</p>
+
+<pre class="code-alt"><code class="language-python">for epoch in range(2000):
+    stats = net.train_step(target=position, lr_w=1e-4, lr_p=1e-3)
+    if epoch % 20 == 0:
+        print(f"Epoch {epoch:3d} | loss ~ {stats['loss']:.6f}")
+</code></pre>
+
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="lnn_learn" class="lnn-learn-class responsive"  alt="Alt" src="../assets/img/lnn_learning.gif" title="LNN learning" />
+    </div>
+</p>
+<br/>
+
+<h3>Extrapolation capabilities</h3>
+<p>We can probe extrapolation directly: take the training input and scale it ×10, then see if the model still tracks.</p>
+
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="lnn_res" class="lnn-res-class responsive"  alt="Alt" src="../assets/img/lnn_res.png" title="LNN results" />
+    </div>
+</p>
+<br/>
+
+<h2>A quasi-fair RNN baseline</h2>
+<hr />
+<p>To compare, here’s a standard two-layer <code>nn.RNN</code> with a not very similar footprint:</p>
+<ul>
+  <li>Input: <span class="math">\([x, \dot{x}, u]\)</span></li>
+  <li>Hidden: 100 units × 2 layers</li>
+  <li>Output: <span class="math">\([\dot{x}, \ddot{x}]\)</span> (we predict derivatives and integrate with Euler)</li>
+</ul>
+<p>We train on 20-step sequences using MSE on <span class="math">\(d\mathbf{s}/dt\)</span>, then simulate closed-loop on the full horizon, including the same ×10 input scale test.</p>
+
+<pre class="code-alt"><code class="language-python">class RNNDynamicsModel(nn.Module):
+    def __init__(self, state_dim=2, input_dim=1, hidden_dim=100):
+        super().__init__()
+        self.rnn1 = nn.RNN(input_size=state_dim+input_dim, hidden_size=hidden_dim, batch_first=True)
+        self.rnn2 = nn.RNN(input_size=hidden_dim,        hidden_size=hidden_dim, batch_first=True)
+        self.fc   = nn.Linear(hidden_dim, state_dim)  # predicts d[state]/dt
+
+    def forward(self, s_seq, u_seq):
+        x = torch.cat([s_seq, u_seq], dim=-1)
+        h1,_ = self.rnn1(x)
+        h2,_ = self.rnn2(h1)
+        return self.fc(h2)
+</code></pre>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="rnn_learn" class="rnn-learn-class responsive"  alt="Alt" src="../assets/img/rnn_learning.gif" title="RNN learning" />
+    </div>
+</p>
+<br/>
+<p>
+    <br />
+    <div style="text-align: center;">
+        <img id="rnn_res" class="rnn-res-class responsive"  alt="Alt" src="../assets/img/rnn_res.png" title="RNN results" />
+    </div>
+</p>
+<br/>
+
+<p>A few notes on <strong>parity</strong> and <strong>scale</strong>:</p>
+<ul>
+  <li><strong>Parameter count.</strong><br>– LNN: ~<strong>36</strong> trainables (≈15 edges + 7 neurons × 3 params).<br>– RNN: ~<strong>31k</strong> trainables (two 100-unit RNN layers + a small head).</li>
+  <li><strong>Stability constraints.</strong> LNN enforces <span class="math">\(\tau,\zeta&gt;0\)</span>. The RNN has no built-in stability prior; closed-loop rollout can drift.</li>
+</ul>
+<br />
+<h2>What differs and why it matters</h2>
+<hr />
+1. <u>Where the memory lives</u>
+<ul>
+  <li><strong>LNN:</strong> memory is <strong>physical</strong> (time constants in TFs). You never unroll, you simulate LTI blocks once per neuron.</li>
+  <li><strong>RNN:</strong> memory is <strong>parametric</strong> (hidden state). You must unroll through time and backpropagate through that unroll (or train on short windows and hope it generalizes).</li>
+</ul>
+
+2. <u>Gradients</u>
+<ul>
+  <li><strong>LNN:</strong> gradients flow through <strong>transfer-function algebra</strong>. The key objects are <span class="math">\(H_j, G_j\)</span> and <span class="math">\(\partial H_j/\partial\theta\)</span>. No vanishing/exploding from long unrolls, the temporal convolution is handled by the TF itself (as promised last time).</li>
+  <li><strong>RNN:</strong> classic BPTT through many steps. Mitigations (gating, normalization, careful LR) help, but the mechanism remains recursive.</li>
+</ul>
+
+3. <u>Inductive bias and extrapolation</u>
+<ul>
+  <li><strong>LNN:</strong> linear dynamics + simple nonlinearity (if you insert one) → <strong>predictable scaling</strong> (our ×10 test).</li>
+  <li><strong>RNN:</strong> excellent at interpolation; <strong>extrapolation</strong> depends on how the hidden state happened to encode scale during training.</li>
+</ul>
+
+4. <u>Interpretability</u>
+<ul>
+  <li><strong>LNN:</strong> parameters <span class="math">\((k,\tau,\zeta)\)</span> are interpretable time/gain constants per neuron; learned edge weights show the effective signal pathways.</li>
+  <li><strong>RNN:</strong> internal state is opaque.</li>
+</ul>
+<br />
+<h2>Side-by-side summary</h2>
+<hr />
+<table class="centered-bordered">
+  <thead>
+    <tr>
+      <th>Aspect</th>
+      <th>Laplace Neural Network</th>
+      <th>RNN (vanilla, 2×100)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Trainables (this setup)</td>
+      <td>~<strong>36</strong></td>
+      <td>~<strong>31,000</strong></td>
+    </tr>
+    <tr>
+      <td>Memory mechanism</td>
+      <td>Time constants in TFs</td>
+      <td>Hidden state</td>
+    </tr>
+    <tr>
+      <td>Gradient path</td>
+      <td>Through TF compositions (no BPTT)</td>
+      <td>BPTT through time</td>
+    </tr>
+    <tr>
+      <td>Stability prior</td>
+      <td><span class="math">\(\tau,\zeta&gt;0\)</span> (enforced)</td>
+      <td>None (learned implicitly)</td>
+    </tr>
+    <tr>
+      <td>Generalization to ×10 input</td>
+      <td><strong>Linear</strong> w.r.t. TF</td>
+      <td><strong>Non-guaranteed</strong>; can drift</td>
+    </tr>
+    <tr>
+      <td>Interpretability</td>
+      <td>High</td>
+      <td>Low</td>
+    </tr>
+  </tbody>
+</table>
+<br />
+<h2>Where to go next</h2>
+<hr />
+<ul>
+  <li>Insert the <span class="math">\(\delta\)</span>ReLU (or any static nonlinearity) before each LTI block to get a Hammerstein-style LNN and repeat the experiment and watch the residual shrink on non-linear plants.</li>
+  <li>Replace first-order <span class="math">\(H_j\)</span> with <strong>second-order</strong> blocks for oscillatory modes.</li>
+  <li>Constrain or regularize <span class="math">\(\tau\)</span> distributions to induce multi-scale memory.</li>
+</ul>
+<br/>
+<h3>References</h3>
+<ol>
+  <li><a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph" target="_blank" rel="noopener noreferrer">Directed acyclic graph</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm" target="_blank" rel="noopener noreferrer">Kahn’s algorithm</a></li>
+</ol>
+
+                <hr>
+                <div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-6"><a href="gradient_calculation.html"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-left">
+                                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"></path>
+                                    </svg></a></div>
+                            <div class="col-6 text-end"><a href="#"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-right">
+                                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"></path>
+                                    </svg></a></div>
+                        </div>
+                    </div>
+                </div><button class="btn btn-primary" id="scrollToTopBtn" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up" style="font-size: 26px;">
+                        <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"></path>
+                    </svg></button>
+            </div>
+            <div id="end" class="fancy-border"></div>
+        </div>
+    </div>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/js/scrolltop.js"></script>
+</body>
+
+</html>

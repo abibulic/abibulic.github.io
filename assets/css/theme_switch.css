@@ -38,6 +38,46 @@ body[data-bs-theme=dark] .poles-class {
   content: url("../../assets/img/poles-dark.png");
 }
 
+.msd-class {
+  content: url("../../assets/img/msd.png");
+}
+
+body[data-bs-theme=dark] .msd-class {
+  content: url("../../assets/img/msd-dark.png");
+}
+
+.lnn-learn-class {
+  content: url("../../assets/img/lnn_learning.gif");
+}
+
+body[data-bs-theme=dark] .lnn-learn-class {
+  content: url("../../assets/img/lnn_learning-dark.gif");
+}
+
+.rnn-learn-class {
+  content: url("../../assets/img/rnn_learning.gif");
+}
+
+body[data-bs-theme=dark] .rnn-learn-class {
+  content: url("../../assets/img/rnn_learning-dark.gif");
+}
+
+.lnn-res-class {
+  content: url("../../assets/img/lnn_res.png");
+}
+
+body[data-bs-theme=dark] .lnn-res-class {
+  content: url("../../assets/img/lnn_res-dark.png");
+}
+
+.rnn-res-class {
+  content: url("../../assets/img/rnn_res.png");
+}
+
+body[data-bs-theme=dark] .rnn-res-class {
+  content: url("../../assets/img/rnn_res-dark.png");
+}
+
 .responsive {
   max-width: 100%;
   height: auto;

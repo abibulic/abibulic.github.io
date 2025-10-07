@@ -20,9 +20,11 @@
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Share+Tech+Mono&amp;display=swap">
     <link rel="stylesheet" href="assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="assets/css/code.css">
     <link rel="stylesheet" href="assets/css/equations.css">
     <link rel="stylesheet" href="assets/css/scrolltop.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/table.css">
     <link rel="stylesheet" href="assets/css/theme_switch.css">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6Q2YQ6FRRM"></script>
@@ -166,6 +168,15 @@ updateThemeIcon(isDark);
                     <h1 class="mb-0">Blog</h1>
                     <div data-bss-type="blog-loop" data-bss-perpage="3">
                         <div class="row gy-3 row-cols-1 row-cols-md-2 row-cols-lg-3 mt-0" data-bss-type="blog-loop-base">
+                            <div class="col" data-bss-type="blog-loop-item">
+                                <div class="card"><a href="blog/implementation.html"><img class="img-fluid card-img-top" width="512" height="512" src="assets/img/implementation.jpg"></a>
+                                    <div class="card-body mx-0 my-0 notebook-grid"><a href="blog/implementation.html">
+                                            <h4 class="text-body">From Equations to Code: Training a Laplace Neural Network</h4>
+                                        </a>
+                                        <p class="card-text">This post turns the Laplace-domain theory into a clean, runnable Python Laplace Neural Network. We wire LTI “neurons” into a DAG, learn a mass–spring–damper from data, derive gradients via transfer-function algebra (no BPTT), and then pit the model against an RNN while probing ×10 input extrapolation, showing why TF-based learning stays stable, scalable, and interpretable.</p><time datetime="2025-10-07">Oct 7, 2025</time>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col" data-bss-type="blog-loop-item">
                                 <div class="card"><a href="blog/gradient_calculation.html"><img class="img-fluid card-img-top" width="512" height="512" src="assets/img/gradient_flow.jpg"></a>
                                     <div class="card-body mx-0 my-0 notebook-grid"><a href="blog/gradient_calculation.html">

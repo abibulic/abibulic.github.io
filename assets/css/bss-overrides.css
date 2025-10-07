@@ -25,6 +25,8 @@
   --bs-tertiary-color-rgb: 65,99,119,0.5;
   --bs-body-bg: #f1efee;
   --bs-body-bg-rgb: 241,239,238;
+  --bs-secondary-bg: rgba(214,181,173,0.1);
+  --bs-secondary-bg-rgb: 214,181,173,0.1;
   --bs-secondary-color: rgba(65,99,119,0.75);
   --bs-secondary-color-rgb: 65,99,119,0.75;
 }
@@ -178,6 +180,8 @@
   --bs-body-color-rgb: 167,187,200;
   --bs-body-bg: #102131;
   --bs-body-bg-rgb: 16,33,49;
+  --bs-secondary-bg: rgba(47,85,122,0.1);
+  --bs-secondary-bg-rgb: 47,85,122,0.1;
   --bs-secondary-color: rgba(167,187,200,0.75);
   --bs-secondary-color-rgb: 167,187,200,0.75;
   --bs-tertiary-color: rgba(167,187,200,0.5);
