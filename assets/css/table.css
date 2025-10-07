@@ -1,12 +1,23 @@
+/* optional wrapper to allow horizontal scroll on tiny screens */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+/* responsive table */
+
 .centered-bordered {
   margin: 1rem auto;
   border-collapse: collapse;
-  width: max-content;
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
 }
 
 .centered-bordered th, .centered-bordered td {
-  border: 1px solid rgba(115,137,150);
+  border: 1px solid rgba(115, 137, 150, 1);
   padding: 8px 12px;
+  overflow-wrap: anywhere;
 }
 
 .centered-bordered thead th {
